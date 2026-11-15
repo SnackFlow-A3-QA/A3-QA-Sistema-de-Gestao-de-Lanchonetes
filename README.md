@@ -4,9 +4,9 @@
 
 **Sistema de gestão de lanchonetes: pedidos, estoque e vendas em um só lugar.**
 
-[![CI](https://github.com/Guillyam_Teste/SnackFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/Guillyam_Teste/SnackFlow/actions/workflows/ci.yml)
-[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=guillyam&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=guillyam)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=guillyam&metric=coverage)](https://sonarcloud.io/summary/new_code?id=guillyam)
+[![CI](https://github.com/SnackFlow-A3-QA/A3-QA-Sistema-de-Gestao-de-Lanchonetes/actions/workflows/ci.yml/badge.svg)](https://github.com/SnackFlow-A3-QA/A3-QA-Sistema-de-Gestao-de-Lanchonetes/actions/workflows/ci.yml)
+[![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=SnackFlow-A3-QA_A3-QA-Sistema-de-Gestao-de-Lanchonetes&metric=alert_status&token=dfec85ad8e590bce037256861fd6be3c1562ea93)](https://sonarcloud.io/summary/new_code?id=SnackFlow-A3-QA_A3-QA-Sistema-de-Gestao-de-Lanchonetes)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=SnackFlow-A3-QA_A3-QA-Sistema-de-Gestao-de-Lanchonetes&metric=coverage&token=dfec85ad8e590bce037256861fd6be3c1562ea93)](https://sonarcloud.io/summary/new_code?id=SnackFlow-A3-QA_A3-QA-Sistema-de-Gestao-de-Lanchonetes)
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4-6DB33F?logo=springboot&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white)
