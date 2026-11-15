@@ -14,8 +14,8 @@
 
 </div>
 
-> Projeto da **A3** de Garantia e Qualidade de Software, UNISUL (Prof. Jorge Werner).
-> O foco é a qualidade do processo: testes automatizados, cobertura de **80%**, análise estática com *quality gate* e gestão de configuração no GitHub.
+> Projeto da **A3** de Garantia e Qualidade de Software, UNISUL (Prof. Jorge Werner e Armando Cardoso).
+> O foco é a qualidade do processo: testes automatizados, cobertura de **75%**, análise estática com *quality gate* e gestão de configuração no GitHub.
 
 ## ✨ Funcionalidades
 
@@ -48,7 +48,7 @@ flowchart LR
 
 ## ✅ Qualidade
 
-- Cobertura mínima de **80%** (o build falha abaixo disso)
+- Cobertura mínima de **75%** (o build falha abaixo disso)
 - *Quality gate* do SonarCloud aprovado a cada push e pull request
 - Todos os issues resolvidos antes da entrega
 
@@ -91,7 +91,14 @@ Seguimos o [Conventional Commits](https://www.conventionalcommits.org/pt-br/): c
 Branch principal: `main`. Mudanças entram por pull request com CI verde.
 
 ## 👥 Equipe e divições (Em discussão)
-...
+
+Guilherme Hillesheim Martins (Guillyam):
+
+Rafael Torres Amorim (Rafael-T4):
+
+Lucas Nicoleti Schmegel (LucasNicoleti):
+
+Rodrigo de Carvalho Franz (rodrigofranz):
 
 ## 📄 Licença
 
