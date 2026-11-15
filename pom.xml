@@ -26,8 +26,8 @@
         <jacoco.minimum.coverage>0.80</jacoco.minimum.coverage>
 
         <!-- SonarCloud: preencher depois de importar o repositório -->
-        <sonar.organization>{{SONAR_ORG}}</sonar.organization>
-        <sonar.projectKey>{{SONAR_KEY}}</sonar.projectKey>
+        <sonar.organization>snackflow-a3-qa</sonar.organization>
+        <sonar.projectKey>SnackFlow-A3-QA_A3-QA-Sistema-de-Gestao-de-Lanchonetes</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.coverage.exclusions>**/*Application.java</sonar.coverage.exclusions>
