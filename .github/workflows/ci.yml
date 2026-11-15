@@ -1,3 +1,4 @@
+
 name: CI
 
 on:
@@ -6,17 +7,22 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   build:
     name: Build, testes e SonarCloud
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # o Sonar precisa do histórico completo
+          fetch-depth: 0
 
-      - name: Java 21
+      - name: Configurar Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -30,11 +36,14 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - name: Testes, cobertura (JaCoCo 85%) e análise Sonar
+      - name: Build, testes e análise SonarCloud
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: >
           mvn -B verify
           org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.organization=snackflow-a3-qa
+          -Dsonar.projectKey=SnackFlow-A3-QA_A3-QA-Sistema-de-Gestao-de-Lanchonetes
           -Dsonar.qualitygate.wait=true
