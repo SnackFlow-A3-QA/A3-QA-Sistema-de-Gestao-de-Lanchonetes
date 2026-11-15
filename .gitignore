@@ -1,0 +1,29 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+out/
+
+# Outros IDEs
+.vscode/
+.classpath
+.project
+.settings/
+.apt_generated/
+.factorypath
+.springBeans
+.sts4-cache
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Segredos e ambiente local
+.env
+application-local.properties
+*.log
+HELP.md
