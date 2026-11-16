@@ -15,7 +15,7 @@
 </div>
 
 > Projeto da **A3** de Garantia e Qualidade de Software, UNISUL (Prof. Jorge Werner e Armando Cardoso).
-> O foco é a qualidade do processo: testes automatizados, cobertura de **75%**, análise estática com *quality gate* e gestão de configuração no GitHub.
+> O foco é a qualidade do processo: testes automatizados, cobertura de **80%**, análise estática com *quality gate* e gestão de configuração no GitHub.
 
 ## ✨ Funcionalidades
 
@@ -48,7 +48,7 @@ flowchart LR
 
 ## ✅ Qualidade
 
-- Cobertura mínima de **75%** (o build falha abaixo disso)
+- Cobertura mínima de **80%** (o build falha abaixo disso)
 - *Quality gate* do SonarCloud aprovado a cada push e pull request
 - Todos os issues resolvidos antes da entrega
 
@@ -92,13 +92,20 @@ Branch principal: `main`. Mudanças entram por pull request com CI verde.
 
 ## 👥 Equipe e divições (Em discussão)
 
-Guilherme Hillesheim Martins (Guillyam):
 
-Rafael Torres Amorim (Rafael-T4):
+| Integrante | Papel | GitHub |
+|---|---|---|
+| 1 Lucas N. | DevOps + Desenvolvedor | [@Lucas Nicoletti](https://github.com)|
+| 2 Guilherme H. | DevOps + Desenvolvedor | [@Guillyam](https://github.com) |
+| 3 Rafael T. | Desenvolvedor + Testador | [@Rafael T.](https://github.com) |
+| 4 rodrigo F. | Desenvolvedor + Testador | [@rodrigofranz](https://github.com) |
 
-Lucas Nicoleti Schmegel (LucasNicoleti):
-
-Rodrigo de Carvalho Franz (rodrigofranz):
+| Responsável | Módulos (pacotes) |
+|---|---|
+| (membro 1, DevOps) | `pedido` |
+| (membro 2, DevOps) | `funcionario`, `config` (segurança), pipeline de CI |
+| (membro 3) | `produto`, `estoque` |
+| (membro 4) | `cliente`, `relatorio` |
 
 ## 📄 Licença
 

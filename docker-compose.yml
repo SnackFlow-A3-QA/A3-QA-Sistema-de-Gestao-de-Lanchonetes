@@ -1,0 +1,19 @@
+# Sobe o MySQL local com o script de database/ aplicado na primeira execução.
+# Uso: docker compose up -d     |     Reiniciar do zero: docker compose down -v
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: snackflow-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: lanchonete
+      MYSQL_USER: snackflow
+      MYSQL_PASSWORD: snackflow
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d:ro
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
