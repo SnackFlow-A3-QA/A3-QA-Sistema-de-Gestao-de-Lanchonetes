@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Relatórios')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: menu('relatorios')}"></nav>
+<main class="container pb-5">
+    <h1 class="h3 mb-3">Relatórios</h1>
+
+    <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+
+    <form method="get" th:action="@{/relatorios}" class="row g-2 align-items-end mb-3">
+        <div class="col-12 col-md-4">
+            <label class="form-label" for="tipo">Relatório</label>
+            <select id="tipo" name="tipo" class="form-select">
+                <option th:each="t : ${tipos}" th:value="${t.name()}" th:text="${t.titulo}"
+                        th:selected="${t == resultado.tipo()}"></option>
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label" for="inicio">De</label>
+            <input type="date" id="inicio" name="inicio" class="form-control" th:value="${resultado.inicio()}">
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label" for="fim">Até</label>
+            <input type="date" id="fim" name="fim" class="form-control" th:value="${resultado.fim()}">
+        </div>
+        <div class="col-12 col-md-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Gerar</button>
+            <a class="btn btn-outline-success"
+               th:href="@{/relatorios/csv(tipo=${resultado.tipo().name()},inicio=${resultado.inicio()},fim=${resultado.fim()})}">Exportar CSV</a>
+        </div>
+    </form>
+
+    <h2 class="h5" th:text="${resultado.tipo().titulo}"></h2>
+    <p class="text-muted small" th:unless="${resultado.tipo().usaPeriodo}">
+        Este relatório mostra a situação atual e não depende do período.
+    </p>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th th:each="coluna : ${resultado.colunas()}" th:text="${coluna}"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="linha : ${resultado.linhas()}">
+                <td th:each="valor : ${linha}" th:text="${valor}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(resultado.linhas())}">
+                <td class="text-center text-muted">Nenhum dado encontrado para os filtros.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="text-muted" th:text="${#lists.size(resultado.linhas())} + ' registro(s).'"></p>
+</main>
+</body>
+</html>
