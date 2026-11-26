@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<!-- Peças comuns a todas as páginas (inclusive login e erros). Arquivo compartilhado. -->
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<!-- Cabeça comum a todas as páginas (inclusive login e erros) -->
+<head th:fragment="cabecaBase(titulo)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta th:if="${_csrf != null}" name="_csrf" th:content="${_csrf.token}">
+    <meta th:if="${_csrf != null}" name="_csrf_header" th:content="${_csrf.headerName}">
+    <title th:text="${titulo} + ' • SnackFlow'">SnackFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script th:src="@{/js/tailwind-config.js}"></script>
+    <link rel="stylesheet" th:href="@{/css/snackflow.css}">
+</head>
+
+<body>
+<!-- Scripts comuns (fim do <body>) -->
+<th:block th:fragment="scriptsBase">
+    <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <script th:src="@{/js/snackflow.js}"></script>
+</th:block>
+</body>
+</html>

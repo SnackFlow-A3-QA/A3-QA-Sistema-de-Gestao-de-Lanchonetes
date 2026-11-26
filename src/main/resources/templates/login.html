@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/base :: cabecaBase('Login')}"></head>
+<body class="flex min-h-screen items-center justify-center bg-brand-dark p-4 antialiased">
+
+<main class="w-full max-w-md overflow-hidden rounded-xl border border-brand-border bg-white shadow-2xl">
+    <div class="border-b border-slate-800 bg-brand-dark px-8 pb-6 pt-8 text-center">
+        <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-brand-orange shadow-lg">
+            <i data-lucide="utensils" class="h-7 w-7 text-white"></i>
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight text-white">SnackFlow</h1>
+        <p class="mt-1 text-sm text-slate-300">Sistema de gestão de lanchonetes</p>
+    </div>
+
+    <div class="p-8">
+        <h2 class="mb-4 text-lg font-semibold">Entrar no sistema</h2>
+
+        <div th:if="${param.erro != null}" class="sf-alerta sf-alerta-perigo mb-4" role="alert">
+            <i data-lucide="alert-circle"></i>
+            <span>Usuário inativo ou credenciais inválidas.</span>
+        </div>
+        <div th:if="${param.saiu != null}" class="sf-alerta sf-alerta-info mb-4" role="status">
+            <i data-lucide="info"></i>
+            <span>Sessão encerrada com sucesso.</span>
+        </div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="sf-campo">
+                <label class="sf-rotulo" for="login">Login de acesso <span class="sf-obrigatorio" aria-hidden="true">*</span></label>
+                <input class="sf-input" type="text" id="login" name="login" required autofocus
+                       autocomplete="username" placeholder="Ex.: ana.caixa">
+            </div>
+            <div class="sf-campo">
+                <label class="sf-rotulo" for="senha">Senha <span class="sf-obrigatorio" aria-hidden="true">*</span></label>
+                <input class="sf-input" type="password" id="senha" name="senha" required
+                       autocomplete="current-password" placeholder="Digite sua senha">
+            </div>
+            <button type="submit" class="sf-btn sf-btn-primario sf-btn-grande sf-btn-bloco"
+                    data-texto-carregando="Entrando…">
+                <i data-lucide="log-in"></i><span>Entrar</span>
+            </button>
+        </form>
+    </div>
+</main>
+
+<th:block th:replace="~{fragments/base :: scriptsBase}"></th:block>
+</body>
+</html>

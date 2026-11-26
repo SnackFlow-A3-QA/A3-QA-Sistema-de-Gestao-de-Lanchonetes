@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: pagina('Teste', 'Formulário de exemplo', ~{::conteudo})}">
+<body>
+<section th:fragment="conteudo">
+    <form th:action="@{/teste/formulario}" th:object="${form}" method="post">
+        <div th:replace="~{fragments/componentes :: campoTexto('Nome do produto', 'nome', true, 'text', 'Ex.: X-Burger')}"></div>
+        <div th:replace="~{fragments/componentes :: campoTextarea('Descrição', 'descricao', false)}"></div>
+        <div th:replace="~{fragments/componentes :: campoSelect('Categoria', 'categoria', true, ${categorias}, 'Selecione')}"></div>
+        <div th:replace="~{fragments/componentes :: campoCheckbox('Ativo', 'ativo')}"></div>
+        <button th:replace="~{fragments/componentes :: botao('Salvar', 'save', 'primario')}"></button>
+    </form>
+    <div th:replace="~{fragments/componentes :: tabela(${ {'Nome', 'Preço'} }, ~{::linhas})}"></div>
+    <div th:replace="~{fragments/componentes :: alerta('aviso', 'Atenção de exemplo')}"></div>
+    <span th:replace="~{fragments/componentes :: badge('Estoque baixo', 'aviso', 'alert-triangle')}"></span>
+    <span th:replace="~{fragments/componentes :: badgeStatus('PRONTO')}"></span>
+    <table style="display:none">
+        <tbody th:fragment="linhas"><tr><td>X-Burger</td><td>R$ 24,00</td></tr></tbody>
+    </table>
+</section>
+</body>
+</html>

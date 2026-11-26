@@ -1,0 +1,140 @@
+/* SnackFlow - componentes compartilhados (Design System 1.0).
+   CSS puro, independente do Tailwind CDN, para que formulários, botões, badges e
+   tabelas fiquem idênticos em todos os módulos. Não duplique estes estilos nos módulos. */
+
+:root {
+  --sf-laranja: #EA580C;
+  --sf-laranja-escuro: #C2410C;
+  --sf-azul-escuro: #172B4D;
+  --sf-azul: #2563EB;
+  --sf-fundo: #F8FAFC;
+  --sf-superficie: #FFFFFF;
+  --sf-texto: #1E293B;
+  --sf-texto-suave: #64748B;
+  --sf-borda: #E2E8F0;
+  --sf-verde: #16A34A;
+  --sf-amarelo: #D97706;
+  --sf-vermelho: #DC2626;
+  --sf-raio: 8px;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--sf-fundo); color: var(--sf-texto); }
+
+/* Acessibilidade: foco visível em tudo que é interativo */
+:focus-visible { outline: 2px solid var(--sf-azul); outline-offset: 2px; }
+
+/* ---------- Botões (40px; compacto 32px; grande 48px) ---------- */
+.sf-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 40px; padding: 0 16px; border-radius: var(--sf-raio); border: 1px solid transparent;
+  font-size: 14px; font-weight: 600; line-height: 1; cursor: pointer; text-decoration: none;
+  transition: background-color .15s, border-color .15s; white-space: nowrap;
+}
+.sf-btn svg { width: 16px; height: 16px; }
+.sf-btn-compacto { height: 32px; padding: 0 12px; font-size: 12px; }
+.sf-btn-grande { height: 48px; padding: 0 20px; }
+.sf-btn-bloco { width: 100%; }
+.sf-btn-primario { background: var(--sf-laranja); color: #fff; }
+.sf-btn-primario:hover { background: var(--sf-laranja-escuro); }
+.sf-btn-secundario { background: #F1F5F9; color: var(--sf-texto); }
+.sf-btn-secundario:hover { background: var(--sf-borda); }
+.sf-btn-contorno { background: #fff; color: var(--sf-texto); border-color: var(--sf-borda); }
+.sf-btn-contorno:hover { background: var(--sf-fundo); }
+.sf-btn-perigo { background: var(--sf-vermelho); color: #fff; }
+.sf-btn-perigo:hover { background: #B91C1C; }
+.sf-btn:disabled, .sf-btn[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+.sf-btn.sf-carregando { position: relative; pointer-events: none; opacity: .85; }
+
+/* ---------- Campos de formulário ---------- */
+.sf-campo { display: block; margin-bottom: 16px; }
+.sf-rotulo { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: var(--sf-texto); }
+.sf-obrigatorio { color: var(--sf-vermelho); }
+.sf-input {
+  width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--sf-borda);
+  border-radius: var(--sf-raio); background: #fff; color: var(--sf-texto); font: inherit; font-size: 14px;
+}
+textarea.sf-input { height: auto; min-height: 88px; padding: 10px 12px; resize: vertical; }
+.sf-input::placeholder { color: #94A3B8; }
+.sf-input:focus { outline: none; border-color: var(--sf-azul); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
+.sf-input.sf-invalido { border-color: var(--sf-vermelho); }
+.sf-input:disabled { background: #F1F5F9; color: var(--sf-texto-suave); }
+.sf-ajuda { margin-top: 4px; font-size: 12px; color: var(--sf-texto-suave); }
+.sf-erro-campo { display: flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 12px; color: var(--sf-vermelho); }
+.sf-check { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+.sf-check input { width: 16px; height: 16px; accent-color: var(--sf-laranja); }
+
+/* ---------- Cartão ---------- */
+.sf-cartao { background: var(--sf-superficie); border: 1px solid var(--sf-borda); border-radius: 12px; }
+.sf-cartao-cabecalho { padding: 16px 20px; border-bottom: 1px solid var(--sf-borda); }
+.sf-cartao-titulo { font-size: 16px; font-weight: 600; }
+.sf-cartao-corpo { padding: 20px; }
+
+/* ---------- Tabela (linhas de 48px) ---------- */
+.sf-tabela-rolagem { overflow-x: auto; }
+.sf-tabela { width: 100%; border-collapse: collapse; font-size: 14px; }
+.sf-tabela th {
+  padding: 12px 16px; text-align: left; background: #F8FAFC; border-bottom: 1px solid var(--sf-borda);
+  font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--sf-texto-suave);
+}
+.sf-tabela td { height: 48px; padding: 8px 16px; border-bottom: 1px solid var(--sf-borda); }
+.sf-tabela tbody tr:hover { background: rgba(248, 250, 252, .8); }
+.sf-direita { text-align: right !important; }
+
+/* ---------- Badges (sempre com texto e ícone) ---------- */
+.sf-badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.sf-badge svg { width: 12px; height: 12px; }
+.sf-badge-sucesso { background: #DCFCE7; color: var(--sf-verde); }
+.sf-badge-aviso { background: #FEF3C7; color: var(--sf-amarelo); }
+.sf-badge-perigo { background: #FEE2E2; color: var(--sf-vermelho); }
+.sf-badge-info { background: #DBEAFE; color: var(--sf-azul); }
+.sf-badge-neutro { background: #F1F5F9; color: var(--sf-texto-suave); }
+
+/* ---------- Alertas em página e estado vazio ---------- */
+.sf-alerta { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: var(--sf-raio); border: 1px solid; font-size: 14px; }
+.sf-alerta svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; }
+.sf-alerta-sucesso { background: #F0FDF4; border-color: #BBF7D0; color: #166534; }
+.sf-alerta-aviso { background: #FFFBEB; border-color: #FDE68A; color: #92400E; }
+.sf-alerta-perigo { background: #FEF2F2; border-color: #FECACA; color: #991B1B; }
+.sf-alerta-info { background: #EFF6FF; border-color: #BFDBFE; color: #1E40AF; }
+.sf-vazio { padding: 48px 16px; text-align: center; }
+.sf-vazio-icone { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 0 auto 12px; border-radius: 999px; background: #F1F5F9; color: var(--sf-texto-suave); }
+.sf-vazio-titulo { font-size: 14px; font-weight: 600; }
+.sf-vazio-texto { margin-top: 4px; font-size: 12px; color: var(--sf-texto-suave); }
+
+/* ---------- Spinner ---------- */
+.sf-spinner {
+  display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent;
+  border-radius: 999px; animation: sf-gira .7s linear infinite;
+}
+@keyframes sf-gira { to { transform: rotate(360deg); } }
+
+/* ---------- Toast ---------- */
+.sf-toast {
+  pointer-events: auto; display: flex; align-items: flex-start; gap: 12px; width: 320px; max-width: calc(100vw - 32px);
+  padding: 14px; background: #fff; border: 1px solid var(--sf-borda); border-left-width: 4px; border-radius: var(--sf-raio);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, .1); transition: opacity .3s;
+}
+.sf-toast-sucesso { border-left-color: var(--sf-verde); }
+.sf-toast-erro { border-left-color: var(--sf-vermelho); }
+.sf-toast-aviso { border-left-color: var(--sf-amarelo); }
+.sf-toast-info { border-left-color: var(--sf-azul); }
+.sf-toast svg { width: 20px; height: 20px; flex-shrink: 0; }
+.sf-toast-sucesso svg { color: var(--sf-verde); }
+.sf-toast-erro svg { color: var(--sf-vermelho); }
+.sf-toast-aviso svg { color: var(--sf-amarelo); }
+.sf-toast-info svg { color: var(--sf-azul); }
+
+/* ---------- Menu lateral recolhido (72px) ---------- */
+#sidebar { transition: width .2s; }
+#sidebar.sf-recolhida { width: 72px; }
+#sidebar.sf-recolhida .sf-sidebar-rotulo { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-btn, .sf-toast, #sidebar { transition: none; }
+  .sf-spinner { animation-duration: 1.5s; }
+}
+
+[hidden] { display: none !important; }

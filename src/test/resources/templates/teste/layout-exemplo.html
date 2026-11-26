@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: pagina('Teste', 'Tela de exemplo', ~{::conteudo})}">
+<body>
+<section th:fragment="conteudo">
+    <div th:replace="~{fragments/componentes :: estadoVazio('inbox', 'Nenhum registro encontrado', 'Cadastre o primeiro item.')}"></div>
+    <span th:replace="~{fragments/componentes :: badgeStatus('EM_PREPARO')}"></span>
+    <form th:action="@{/teste/layout}" method="post">
+        <button type="submit" data-confirmar-mensagem="Os ingredientes voltarão ao estoque.">Cancelar pedido</button>
+    </form>
+</section>
+</body>
+</html>

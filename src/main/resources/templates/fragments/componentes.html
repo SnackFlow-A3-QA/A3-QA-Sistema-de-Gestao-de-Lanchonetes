@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<!--
+  COMPONENTES COMPARTILHADOS (arquivo compartilhado: não altere sem alinhar com o grupo).
+  Exemplos de uso (cada um com "th:replace" em um <div> ou <span> da sua tela):
+
+  Estado vazio:   <div th:replace="~{fragments/componentes :: estadoVazio('inbox', 'Nenhum produto', 'Cadastre o primeiro item.')}"></div>
+  Badge de pedido:<span th:replace="~{fragments/componentes :: badgeStatus(${pedido.status})}"></span>
+  Badge livre:    <span th:replace="~{fragments/componentes :: badge('Estoque baixo', 'aviso', 'alert-triangle')}"></span>
+                  tipos: sucesso | aviso | perigo | info | neutro
+  Alerta:         <div th:replace="~{fragments/componentes :: alerta('perigo', ${mensagem})}"></div>
+  Botão (submit): <button th:replace="~{fragments/componentes :: botao('Salvar', 'save', 'primario')}"></button>
+  Botão-link:     <a th:replace="~{fragments/componentes :: linkBotao('/produtos', 'Voltar', 'arrow-left', 'contorno')}"></a>
+                  variantes: primario | secundario | contorno | perigo
+                  (para type="button" ou atributos extras, use direto as classes: class="sf-btn sf-btn-primario")
+  Campos (dentro de um <form th:object="${form}">):
+                  <div th:replace="~{fragments/componentes :: campoTexto('Nome do produto', 'nome', true, 'text', 'Ex.: X-Burger')}"></div>
+                  <div th:replace="~{fragments/componentes :: campoTextarea('Descrição', 'descricao', false)}"></div>
+                  <div th:replace="~{fragments/componentes :: campoSelect('Categoria', 'idCategoria', true, ${categorias}, 'Selecione')}"></div>
+                  <div th:replace="~{fragments/componentes :: campoCheckbox('Ativo', 'ativo')}"></div>
+                  ("categorias" é um Map valor→texto, por exemplo LinkedHashMap<Integer,String>)
+  Cartão:         <div th:replace="~{fragments/componentes :: cartao('Título', ~{::corpoDoCartao})}"></div>
+                  ... <div th:fragment="corpoDoCartao"> ... </div>
+  Tabela:         <div th:replace="~{fragments/componentes :: tabela(${ {'Nome','Preço'} }, ~{::linhas})}"></div>
+                  ... <tbody th:fragment="linhas"><tr th:each="p : ${produtos}"> ... </tr></tbody>
+  Spinner:        <span th:replace="~{fragments/componentes :: spinner('Carregando…')}"></span>
+-->
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Estado vazio para listas sem registros -->
+<div th:fragment="estadoVazio(icone, titulo, descricao)" class="sf-vazio">
+    <div class="sf-vazio-icone"><i th:attr="data-lucide=${icone}" class="h-6 w-6"></i></div>
+    <p class="sf-vazio-titulo" th:text="${titulo}">Nenhum registro</p>
+    <p class="sf-vazio-texto" th:if="${descricao}" th:text="${descricao}">Descrição</p>
+</div>
+
+<!-- Badge genérico: sempre texto (e ícone opcional); nunca só cor -->
+<span th:fragment="badge(texto, tipo, icone)" class="sf-badge" th:classappend="'sf-badge-' + ${tipo}">
+    <i th:if="${icone}" th:attr="data-lucide=${icone}"></i><span th:text="${texto}">Texto</span>
+</span>
+
+<!-- Badge do status do pedido (aceita String ou enum): Aberto, Em preparo, Pronto, Entregue, Cancelado -->
+<th:block th:fragment="badgeStatus(status)" th:switch="${#strings.toString(status)}">
+    <span th:case="'ABERTO'" class="sf-badge sf-badge-neutro"><i data-lucide="circle-dashed"></i>Aberto</span>
+    <span th:case="'EM_PREPARO'" class="sf-badge sf-badge-info"><i data-lucide="flame"></i>Em preparo</span>
+    <span th:case="'PRONTO'" class="sf-badge sf-badge-sucesso"><i data-lucide="check-circle-2"></i>Pronto</span>
+    <span th:case="'ENTREGUE'" class="sf-badge sf-badge-neutro"><i data-lucide="package-check"></i>Entregue</span>
+    <span th:case="'CANCELADO'" class="sf-badge sf-badge-perigo"><i data-lucide="x-circle"></i>Cancelado</span>
+    <span th:case="*" class="sf-badge sf-badge-neutro" th:text="${status}">Status</span>
+</th:block>
+
+<!-- Alerta dentro da página (para mensagens que devem ficar visíveis, como erro de formulário) -->
+<div th:fragment="alerta(tipo, mensagem)" class="sf-alerta" th:classappend="'sf-alerta-' + ${tipo}" role="alert">
+    <i th:attr="data-lucide=${tipo == 'sucesso' ? 'check-circle-2' : (tipo == 'perigo' ? 'x-circle' : (tipo == 'aviso' ? 'alert-triangle' : 'info'))}"></i>
+    <span th:text="${mensagem}">Mensagem</span>
+</div>
+
+<!-- Botões (40px, raio 8px, ícone opcional à esquerda) -->
+<button th:fragment="botao(texto, icone, variante)" type="submit" class="sf-btn" th:classappend="'sf-btn-' + ${variante}">
+    <i th:if="${icone}" th:attr="data-lucide=${icone}"></i><span th:text="${texto}">Texto</span>
+</button>
+
+<a th:fragment="linkBotao(href, texto, icone, variante)" th:href="@{${href}}" class="sf-btn"
+   th:classappend="'sf-btn-' + ${variante}">
+    <i th:if="${icone}" th:attr="data-lucide=${icone}"></i><span th:text="${texto}">Texto</span>
+</a>
+
+<!-- Campos de formulário: rótulo acima, * nos obrigatórios, erro com borda vermelha e mensagem.
+     Use dentro de <form th:object="${form}">; "campo" é o nome do atributo do Form. -->
+<div th:fragment="campoTexto(rotulo, campo, obrigatorio, tipo, placeholder)" class="sf-campo">
+    <label class="sf-rotulo" th:for="${campo}">
+        <span th:text="${rotulo}">Rótulo</span><span th:if="${obrigatorio}" class="sf-obrigatorio" aria-hidden="true"> *</span>
+    </label>
+    <input class="sf-input" th:type="${tipo}" th:field="*{__${campo}__}" th:placeholder="${placeholder}"
+           th:classappend="${#fields.hasErrors(campo)} ? 'sf-invalido'"
+           th:attr="aria-invalid=${#fields.hasErrors(campo)} ? 'true'">
+    <p class="sf-erro-campo" th:if="${#fields.hasErrors(campo)}">
+        <i data-lucide="alert-circle" class="h-3.5 w-3.5"></i><span th:errors="*{__${campo}__}">Campo inválido</span>
+    </p>
+</div>
+
+<div th:fragment="campoTextarea(rotulo, campo, obrigatorio)" class="sf-campo">
+    <label class="sf-rotulo" th:for="${campo}">
+        <span th:text="${rotulo}">Rótulo</span><span th:if="${obrigatorio}" class="sf-obrigatorio" aria-hidden="true"> *</span>
+    </label>
+    <textarea class="sf-input" th:field="*{__${campo}__}"
+              th:classappend="${#fields.hasErrors(campo)} ? 'sf-invalido'"
+              th:attr="aria-invalid=${#fields.hasErrors(campo)} ? 'true'"></textarea>
+    <p class="sf-erro-campo" th:if="${#fields.hasErrors(campo)}">
+        <i data-lucide="alert-circle" class="h-3.5 w-3.5"></i><span th:errors="*{__${campo}__}">Campo inválido</span>
+    </p>
+</div>
+
+<div th:fragment="campoSelect(rotulo, campo, obrigatorio, opcoes, textoVazio)" class="sf-campo">
+    <label class="sf-rotulo" th:for="${campo}">
+        <span th:text="${rotulo}">Rótulo</span><span th:if="${obrigatorio}" class="sf-obrigatorio" aria-hidden="true"> *</span>
+    </label>
+    <select class="sf-input" th:field="*{__${campo}__}"
+            th:classappend="${#fields.hasErrors(campo)} ? 'sf-invalido'"
+            th:attr="aria-invalid=${#fields.hasErrors(campo)} ? 'true'">
+        <option th:if="${textoVazio}" value="" th:text="${textoVazio}">Selecione</option>
+        <option th:each="opcao : ${opcoes}" th:value="${opcao.key}" th:text="${opcao.value}">Opção</option>
+    </select>
+    <p class="sf-erro-campo" th:if="${#fields.hasErrors(campo)}">
+        <i data-lucide="alert-circle" class="h-3.5 w-3.5"></i><span th:errors="*{__${campo}__}">Campo inválido</span>
+    </p>
+</div>
+
+<div th:fragment="campoCheckbox(rotulo, campo)" class="sf-campo">
+    <label class="sf-check">
+        <input type="checkbox" th:field="*{__${campo}__}"><span th:text="${rotulo}">Rótulo</span>
+    </label>
+</div>
+
+<!-- Cartão com título e corpo -->
+<div th:fragment="cartao(titulo, conteudo)" class="sf-cartao">
+    <div class="sf-cartao-cabecalho"><h2 class="sf-cartao-titulo" th:text="${titulo}">Título</h2></div>
+    <div class="sf-cartao-corpo"><th:block th:replace="${conteudo}">conteúdo</th:block></div>
+</div>
+
+<!-- Tabela (linhas de 48px). "colunas" é uma lista de textos; "corpo" é um <tbody th:fragment="..."> -->
+<div th:fragment="tabela(colunas, corpo)" class="sf-tabela-rolagem">
+    <table class="sf-tabela">
+        <thead>
+        <tr><th th:each="coluna : ${colunas}" scope="col" th:text="${coluna}">Coluna</th></tr>
+        </thead>
+        <tbody th:replace="${corpo}"></tbody>
+    </table>
+</div>
+
+<!-- Indicador de carregamento -->
+<span th:fragment="spinner(texto)" class="inline-flex items-center gap-2 text-sm text-brand-muted" role="status">
+    <span class="sf-spinner" aria-hidden="true"></span><span th:text="${texto}">Carregando…</span>
+</span>
+
+</body>
+</html>

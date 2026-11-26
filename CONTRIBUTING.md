@@ -1,17 +1,21 @@
-# Guia da equipe
+# Guia de contribuição
 
-Como trabalhamos no SnackFlow. Leia antes de começar a codar.
+Como se trabalha no SnackFlow. O projeto tem **um único responsável**, que decide, implementa e aprova. Leia antes de
+começar a codar.
 
-## 1. Fluxo de trabalho
+## 1. Fluxo de trabalho (responsável único)
 
-1. Pegue uma **issue** (ou crie uma com o template) e se atribua.
-2. Crie uma branch a partir da `main`: `feature/produto-cadastro`, `fix/cpf-invalido`, `test/estoque-saldo`.
+1. Registre a tarefa numa **issue** (template do repositório) e se atribua.
+2. Crie uma **branch de trabalho** a partir da `main`: `feature/produto-cadastro`, `fix/cpf-invalido`, `test/estoque-saldo`.
 3. Escreva o código **e o teste juntos** (veja a seção 2).
-4. Rode `mvn verify` na sua máquina. Só abra o PR com o build verde.
-5. Abra o Pull Request preenchendo o template e escreva `Closes #N` para fechar a issue.
-6. Um colega aprova, o CI fica verde (testes + JaCoCo + SonarCloud) e então o merge é feito na `main`.
+4. Rode `./mvnw verify` na sua máquina (Docker aberto). Só abra o PR com o build verde.
+5. Abra o **Pull Request como responsável** preenchendo o template e escreva `Closes #N` para fechar a issue.
+6. Aguarde o **CI verde** (testes + JaCoCo + SonarCloud com *quality gate* aprovado). **Não há aprovação de colega:** o
+   merge na `main` é feito pelo responsável assim que as verificações exigidas passam.
 
-Ninguém faz push direto na `main`.
+Ninguém faz push direto na `main`: a **regra de proteção da branch** exige o PR e as verificações do CI, e é ela que
+bloqueia o merge enquanto o CI ou o Sonar não estiverem aprovados. (A proteção da `main` e o `SONAR_TOKEN` foram
+informados como configurados; confira em *Settings → Branches* e *Secrets* se tiver dúvida.)
 
 ## 2. Como funcionam os testes
 
@@ -19,22 +23,24 @@ Cada classe de regra de negócio nasce com seu teste, no mesmo pacote, dentro de
 
 | Tipo | Exemplo | Ferramentas | O que valida |
 |---|---|---|---|
-| Unitário | `ProdutoServiceTest` | JUnit 5 + Mockito | Regras de negócio isoladas (repositório simulado) |
-| Integração | `ProdutoRepositoryTest` | Spring + Testcontainers (MySQL real) | Consultas, triggers, view e procedure |
+| Unitário | `ProdutoServiceTest` | JUnit 5 + Mockito + AssertJ | Regras de negócio isoladas (repositório simulado) |
+| Integração | `ProdutoRepositoryTest` | Spring + Testcontainers (MySQL real) | Consultas, triggers, views e procedure |
 | Web | `ProdutoControllerTest` | MockMvc | Rotas, validação de formulário, perfis de acesso |
 
-Regras do grupo:
+Regras de teste:
 
 - Todo método público de `Service` tem pelo menos um teste de sucesso e um de falha.
 - Padrão **Arrange / Act / Assert**; nomes como `deveRejeitarPrecoNegativo`.
 - Prefira testes unitários (rápidos). Use `@SpringBootTest` apenas quando necessário.
 - **Nome da classe de teste termina em `Test`.** Classes `*IT` não são executadas pelo Maven.
-- Não use banco local nos testes: o Testcontainers sobe um MySQL descartável (o Docker precisa estar aberto).
+- Não use banco local nos testes: o Testcontainers sobe um MySQL descartável (o Docker precisa estar aberto) e o reaproveita entre as classes.
+- Testes que chamam `sp_alterar_status_pedido` **não podem ser `@Transactional`** (a procedure faz commit). Use dados próprios por teste ou limpeza com `@Sql`.
+- O banco de teste já nasce com os dados de exemplo do script; não dependa deles.
 
 ## 3. Cobertura e qualidade
 
-- O JaCoCo exige **80% de cobertura de linhas no projeto inteiro**; abaixo disso o `mvn verify` falha.
-- Para ver o relatório: `mvn verify` e abra `target/site/jacoco/index.html`.
+- O JaCoCo exige **80% de cobertura de linhas no projeto inteiro**; abaixo disso o `./mvnw verify` falha.
+- Para ver o relatório: `./mvnw verify` e abra `target/site/jacoco/index.html`.
 - O SonarCloud analisa cada push e PR; o *quality gate* precisa estar aprovado.
 - Issues do SonarCloud e issues abertas pelo professor devem ser resolvidas antes da entrega.
 
@@ -42,26 +48,35 @@ Regras do grupo:
 
 - Padrão **Conventional Commits**: `feat:`, `fix:`, `test:`, `refactor:`, `docs:`, `chore:`, `ci:`.
 - Commits pequenos, com uma única finalidade (um teste, uma correção, uma tela).
-- Use **a sua conta pessoal do GitHub** e commite apenas os arquivos que você escreveu.
-- Commits de README, `pom.xml` e configurações não contam na avaliação individual de código.
+- Commite com a **conta pessoal do GitHub** do responsável, apenas os arquivos que você escreveu.
+- Commits de README, `pom.xml` e configurações não contam na avaliação de código do edital.
+- Mudanças em `database/lanchonete.sql`, `pom.xml`, `ci.yml`, segurança e layout são decisões deliberadas: faça-as em
+  commits e PRs separados e descreva o motivo no PR, porque afetam todos os módulos.
 
-## 5. Quem cuida de quê
+## 5. Organização dos módulos
 
-Cada módulo é um pacote em `src/main/java/br.com.snackflow`. Trabalhar em pacotes diferentes evita conflito de merge.
+Cada módulo é um pacote em `src/main/java/br/com/snackflow`; trabalhar um pacote por vez mantém os PRs pequenos.
 
-| Responsável | Módulos (pacotes) |
+Os números 1 a 4 do planejamento são **só uma organização histórica dos módulos** (um agrupamento de pacotes). **Não
+indicam pessoas, revisores nem aprovações necessárias.**
+
+| Grupo do planejamento | Módulos (pacotes) |
 |---|---|
-| (membro 1, líder) | `pedido` |
-| (membro 2, DevOps) | `funcionario`, `config` (segurança), pipeline de CI |
-| (membro 3) | `produto`, `estoque` |
-| (membro 4) | `cliente`, `relatorio` |
+| 1 | `pedido` (PDV), `cozinha` |
+| 2 | `funcionario`, `config` (segurança e layout), `cliente`, pipeline de CI e Sonar |
+| 3 | `produto` (cardápio), `relatorio` (vendas) |
+| 4 | `estoque`, `relatorio` (estoque) |
 
-O pacote `common` é compartilhado (exceções, utilitários); alterações nele passam por PR com aviso ao grupo.
+O pacote `common` é compartilhado (exceções, utilitários); alterações nele também seguem o fluxo da seção 1.
+
+Onde criar cada classe, como usar layout e componentes, tratar erros e testar: **[docs/GUIA-DO-MODULO.md](docs/GUIA-DO-MODULO.md)**.
+A lista de arquivos compartilhados (alterar só de propósito) está na seção 9 do guia.
 
 ## 6. Rodando na sua máquina
 
 ```bash
 docker compose up -d        # MySQL local, com o script de database/
-mvn spring-boot:run         # aplicação em http://localhost:8080
-mvn verify                  # testes + cobertura (Docker aberto)
+./mvnw spring-boot:run      # aplicação em http://localhost:8080
+./mvnw verify               # testes + cobertura (Docker aberto)
+docker compose down -v      # apaga o banco; o próximo "up" recria do zero
 ```
