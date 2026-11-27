@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<!-- Página de erro completa, sem menu. Uso: th:replace="~{fragments/erro :: paginaErro('403', 'Acesso negado', 'Mensagem', 'lock')}" -->
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:fragment="paginaErro(codigo, titulo, mensagem, icone)">
+<head th:replace="~{fragments/base :: cabecaBase(${titulo})}"></head>
+<body class="flex min-h-screen items-center justify-center bg-brand-bg p-4 antialiased">
+<main class="sf-cartao w-full max-w-md p-8 text-center">
+    <div class="sf-vazio-icone"><i th:attr="data-lucide=${icone}" class="h-6 w-6"></i></div>
+    <p class="text-sm font-semibold text-brand-muted" th:text="${codigo}">000</p>
+    <h1 class="mt-1 text-2xl font-bold" th:text="${titulo}">Título</h1>
+    <p class="mt-2 text-sm text-brand-muted" th:text="${mensagem}">Mensagem</p>
+    <a th:href="@{/}" class="sf-btn sf-btn-primario mt-6">
+        <i data-lucide="home"></i> Voltar ao início
+    </a>
+</main>
+<th:block th:replace="~{fragments/base :: scriptsBase}"></th:block>
+</body>
+</html>

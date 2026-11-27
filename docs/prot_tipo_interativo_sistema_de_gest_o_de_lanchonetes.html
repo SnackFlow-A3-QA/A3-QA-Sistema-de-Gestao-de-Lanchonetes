@@ -1,0 +1,2178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Food Service • Sistema de Gestão de Lanchonetes v5.1</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              orange: '#EA580C',
+              orangeHover: '#C2410C',
+              dark: '#172B4D',
+              darkHover: '#1E3A66',
+              blue: '#2563EB',
+              bg: '#F8FAFC',
+              surface: '#FFFFFF',
+              text: '#1E293B',
+              muted: '#64748B',
+              border: '#E2E8F0',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F8FAFC;
+      color: #1E293B;
+    }
+    /* Custom scrollbar clean */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-orange-100 selection:text-orange-900">
+
+  <!-- ==================== TELA 1: LOGIN & CONTROLE DE ACESSO (RBAC) ==================== -->
+  <div id="login-screen" class="min-h-screen flex items-center justify-center bg-[#172B4D] p-4">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
+      <!-- Header do Card -->
+      <div class="bg-[#172B4D] px-8 pt-8 pb-6 text-center border-b border-slate-800">
+        <div class="w-14 h-14 bg-[#EA580C] rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-600/30">
+          <i data-lucide="utensils" class="w-7 h-7 text-white"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-white tracking-tight">Food Service</h1>
+        <p class="text-slate-300 text-sm mt-1">Sistema de Gestão de Lanchonetes • v5.1</p>
+      </div>
+
+      <!-- Formulário de Login -->
+      <div class="p-8">
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-[#1E293B] mb-1.5">Login de Acesso <span class="text-red-600">*</span></label>
+            <input type="text" id="login-user" value="admin" required
+              class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-500/20"
+              placeholder="Ex.: joao.caixa" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#1E293B] mb-1.5">Senha <span class="text-red-600">*</span></label>
+            <input type="password" id="login-pass" value="••••••••" required
+              class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-500/20"
+              placeholder="Digite sua senha" />
+          </div>
+          <div id="login-error" class="hidden text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-2.5 flex items-center gap-2">
+            <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+            <span>Usuário inativo ou credenciais inválidas.</span>
+          </div>
+          <button type="submit"
+            class="w-full h-11 bg-[#EA580C] hover:bg-[#C2410C] text-white font-semibold text-sm rounded-lg transition flex items-center justify-center gap-2 shadow-sm">
+            <i data-lucide="log-in" class="w-4 h-4"></i>
+            Entrar no Sistema
+          </button>
+        </form>
+
+        <!-- Acesso Rápido por Perfil (Demonstração RBAC) -->
+        <div class="mt-6 pt-6 border-t border-[#E2E8F0]">
+          <p class="text-xs font-semibold uppercase tracking-wider text-[#64748B] text-center mb-3">
+            Acesso Rápido por Perfil (Simulação RBAC)
+          </p>
+          <div class="grid grid-cols-2 gap-2.5">
+            <button onclick="quickLogin('ADMIN')" class="flex items-center justify-between px-3 py-2 rounded-lg border border-slate-200 hover:border-[#172B4D] hover:bg-slate-50 transition text-left">
+              <div>
+                <div class="text-xs font-bold text-[#1E293B]">Carlos Silva</div>
+                <div class="text-[11px] text-[#64748B]">Acesso Total</div>
+              </div>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-[#172B4D] text-white">ADMIN</span>
+            </button>
+
+            <button onclick="quickLogin('CAIXA')" class="flex items-center justify-between px-3 py-2 rounded-lg border border-slate-200 hover:border-blue-500 hover:bg-blue-50/40 transition text-left">
+              <div>
+                <div class="text-xs font-bold text-[#1E293B]">Ana Paula</div>
+                <div class="text-[11px] text-[#64748B]">PDV / Pedidos</div>
+              </div>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700">CAIXA</span>
+            </button>
+
+            <button onclick="quickLogin('COZINHA')" class="flex items-center justify-between px-3 py-2 rounded-lg border border-slate-200 hover:border-purple-500 hover:bg-purple-50/40 transition text-left">
+              <div>
+                <div class="text-xs font-bold text-[#1E293B]">Marcos Chef</div>
+                <div class="text-[11px] text-[#64748B]">Monitor KDS</div>
+              </div>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-purple-100 text-purple-700">COZINHA</span>
+            </button>
+
+            <button onclick="quickLogin('ESTOQUE')" class="flex items-center justify-between px-3 py-2 rounded-lg border border-slate-200 hover:border-amber-500 hover:bg-amber-50/40 transition text-left">
+              <div>
+                <div class="text-xs font-bold text-[#1E293B]">Julia Mendes</div>
+                <div class="text-[11px] text-[#64748B]">Suprimentos</div>
+              </div>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800">ESTOQUE</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== APLICAÇÃO PRINCIPAL (SIDEBAR + ÁREA DE CONTEÚDO) ==================== -->
+  <div id="app-shell" class="hidden min-h-screen flex bg-[#F8FAFC]">
+
+    <!-- SIDEBAR (240px desktop / recolhível 72px) -->
+    <aside id="sidebar" class="w-60 bg-[#172B4D] text-white flex flex-col shrink-0 transition-all duration-200 select-none">
+      <!-- Logo -->
+      <div class="h-16 px-4 flex items-center justify-between border-b border-white/10">
+        <div class="flex items-center gap-3 overflow-hidden">
+          <div class="w-9 h-9 bg-[#EA580C] rounded-lg flex items-center justify-center shrink-0">
+            <i data-lucide="utensils" class="w-5 h-5 text-white"></i>
+          </div>
+          <div class="sidebar-label truncate">
+            <div class="font-bold text-sm leading-tight text-white">Food Service</div>
+            <div class="text-[11px] text-slate-400">Sistema de gestão</div>
+          </div>
+        </div>
+        <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white p-1 rounded-md hidden lg:block" title="Recolher menu">
+          <i data-lucide="panel-left-close" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Navegação Filtrada por Perfil -->
+      <nav id="sidebar-nav" class="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
+        <!-- Renderizado via JS conforme RBAC -->
+      </nav>
+
+      <!-- Rodapé do Usuário Logado -->
+      <div class="p-3 border-t border-white/10 bg-black/15">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center shrink-0 text-slate-200">
+              <i data-lucide="user" class="w-4 h-4"></i>
+            </div>
+            <div class="sidebar-label truncate">
+              <div id="user-name-display" class="text-xs font-semibold text-white truncate">Funcionário</div>
+              <div class="flex items-center gap-1.5 mt-0.5">
+                <span id="user-role-badge" class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-orange-500/20 text-orange-300">ADMIN</span>
+              </div>
+            </div>
+          </div>
+          <button onclick="logout()" class="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition" title="Encerrar Sessão (Logout)">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div class="flex-1 flex flex-col min-w-0">
+      <!-- HEADER SUPERIOR -->
+      <header class="h-16 bg-white border-b border-[#E2E8F0] px-6 flex items-center justify-between shrink-0">
+        <div>
+          <div class="flex items-center gap-2 text-xs text-[#64748B]">
+            <span>Food Service</span>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            <span id="breadcrumb-current" class="font-medium text-[#1E293B]">Ponto de Venda</span>
+          </div>
+          <h1 id="page-title" class="text-xl font-bold text-[#1E293B] leading-tight">Ponto de Venda (PDV)</h1>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Indicador de Alertas de Estoque -->
+          <button onclick="navigateTo('estoque')" id="header-stock-alert" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium hover:bg-amber-100 transition">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-[#D97706]"></i>
+            <span id="header-stock-alert-text">2 insumos em alerta</span>
+          </button>
+
+          <!-- Seletor Rápido de Troca de Perfil para Teste -->
+          <div class="flex items-center gap-2 bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200">
+            <span class="text-[11px] font-medium text-[#64748B] hidden md:inline">Simular Perfil:</span>
+            <select id="role-switcher" onchange="quickLogin(this.value)" class="bg-transparent text-xs font-bold text-[#172B4D] focus:outline-none cursor-pointer">
+              <option value="ADMIN">ADMIN</option>
+              <option value="CAIXA">CAIXA</option>
+              <option value="COZINHA">COZINHA</option>
+              <option value="ESTOQUE">ESTOQUE</option>
+            </select>
+          </div>
+        </div>
+      </header>
+
+      <!-- ÁREA DINÂMICA DAS TELAS -->
+      <main id="main-content" class="flex-1 p-6 overflow-y-auto">
+        <!-- Telas renderizadas dinamicamente aqui -->
+      </main>
+    </div>
+  </div>
+
+  <!-- ==================== MODAIS E NOTIFICAÇÕES (TOAST) ==================== -->
+  <!-- Container de Toast Notification -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Modal Genérico -->
+  <div id="modal-backdrop" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-[1px] z-40 flex items-center justify-center p-4">
+    <div id="modal-box" class="bg-white rounded-xl border border-[#E2E8F0] shadow-xl w-full max-w-lg overflow-hidden animate-fade-in">
+      <!-- Conteúdo do modal injetado via JS -->
+    </div>
+  </div>
+
+  <!-- ==================== LÓGICA DO BANCO DE DADOS E INTERFACE ==================== -->
+  <script>
+    // -------------------------------------------------------------------------
+    // 1. ESTADO INICIAL DO BANCO DE DADOS (SIMULANDO TABELAS, VIEWS E TRIGGERS)
+    // -------------------------------------------------------------------------
+    const DB = {
+      currentUser: null,
+      activeTab: 'pdv',
+
+      funcionarios: [
+        { id: 1, nome: 'Carlos Silva', cargo: 'Gerente Geral', login: 'admin', perfil: 'ADMIN', ativo: true },
+        { id: 2, nome: 'Ana Paula Souza', cargo: 'Operadora de Caixa', login: 'ana.caixa', perfil: 'CAIXA', ativo: true },
+        { id: 3, nome: 'Marcos Oliveira', cargo: 'Chapeiro / Cozinha', login: 'marcos.cozinha', perfil: 'COZINHA', ativo: true },
+        { id: 4, nome: 'Julia Mendes', cargo: 'Estoquista', login: 'julia.estoque', perfil: 'ESTOQUE', ativo: true },
+        { id: 5, nome: 'Roberto Alves', cargo: 'Auxiliar (Desligado)', login: 'roberto.antigo', perfil: 'CAIXA', ativo: false },
+      ],
+
+      clientes: [
+        { id: 1, nome: 'Mariana Costa', cpf: '39053344705', telefone: '(11) 98765-4321' },
+        { id: 2, nome: 'Lucas Fernandes', cpf: '11144477735', telefone: '(11) 91234-5678' },
+      ],
+
+      categorias: ['Todos', 'Lanches', 'Porções', 'Bebidas', 'Sobremesas'],
+
+      // Tabela: ingredientes (unidade: UN, G, ML | saldo_atual | estoque_minimo | custo_medio)
+      ingredientes: [
+        { id: 1, nome: 'Pão Brioche', unidade: 'UN', saldo: 45, minimo: 15, custo_medio: 1.80, ativo: true },
+        { id: 2, nome: 'Hambúrguer Artesanal 160g', unidade: 'UN', saldo: 32, minimo: 10, custo_medio: 4.50, ativo: true },
+        { id: 3, nome: 'Queijo Cheddar Fatiado', unidade: 'G', saldo: 1200, minimo: 500, custo_medio: 0.045, ativo: true }, // 45/kg -> 0.045/g
+        { id: 4, nome: 'Bacon Fatiado', unidade: 'G', saldo: 280, minimo: 400, custo_medio: 0.06, ativo: true }, // Estoque baixo!
+        { id: 5, nome: 'Cebola Roxa', unidade: 'G', saldo: 900, minimo: 300, custo_medio: 0.01, ativo: true },
+        { id: 6, nome: 'Batata Palito Congelada', unidade: 'G', saldo: 4500, minimo: 1500, custo_medio: 0.018, ativo: true },
+        { id: 7, nome: 'Refrigerante Lata 350ml', unidade: 'UN', saldo: 4, minimo: 12, custo_medio: 2.60, ativo: true }, // Estoque baixo!
+        { id: 8, nome: 'Sorvete Creme', unidade: 'ML', saldo: 2000, minimo: 500, custo_medio: 0.02, ativo: true },
+      ],
+
+      // Tabela: produtos + produto_ingredientes (ficha técnica) + produto_opcoes
+      produtos: [
+        {
+          id: 1,
+          nome: 'X-Burger Clássico',
+          categoria: 'Lanches',
+          preco: 24.00,
+          ativo: true,
+          emoji: '🍔',
+          receita: [
+            { id_ingrediente: 1, qtd: 1 },   // 1 Pão
+            { id_ingrediente: 2, qtd: 1 },   // 1 Carne
+            { id_ingrediente: 3, qtd: 40 },  // 40g Cheddar
+            { id_ingrediente: 5, qtd: 20 },  // 20g Cebola
+          ],
+          opcoes: [
+            { id: 101, nome: '+ Bacon Extra', tipo: 'ADICIONAL', preco: 4.50, id_ingrediente: 4, qtd_extra: 40 },
+            { id: 102, nome: '+ Hambúrguer Extra', tipo: 'ADICIONAL', preco: 7.00, id_ingrediente: 2, qtd_extra: 1 },
+            { id: 103, nome: 'SEM Cebola', tipo: 'REMOCAO', preco: 0, id_ingrediente: null, qtd_extra: 0 },
+          ]
+        },
+        {
+          id: 2,
+          nome: 'X-Bacon Supremo',
+          categoria: 'Lanches',
+          preco: 29.50,
+          ativo: true,
+          emoji: '🥓',
+          receita: [
+            { id_ingrediente: 1, qtd: 1 },
+            { id_ingrediente: 2, qtd: 1 },
+            { id_ingrediente: 3, qtd: 40 },
+            { id_ingrediente: 4, qtd: 50 }, // 50g Bacon
+          ],
+          opcoes: [
+            { id: 201, nome: '+ Dobro de Bacon', tipo: 'ADICIONAL', preco: 5.00, id_ingrediente: 4, qtd_extra: 50 },
+            { id: 202, nome: 'SEM Cheddar', tipo: 'REMOCAO', preco: 0, id_ingrediente: null, qtd_extra: 0 },
+          ]
+        },
+        {
+          id: 3,
+          nome: 'Batata Frita Crocante (400g)',
+          categoria: 'Porções',
+          preco: 18.00,
+          ativo: true,
+          emoji: '🍟',
+          receita: [
+            { id_ingrediente: 6, qtd: 400 },
+          ],
+          opcoes: [
+            { id: 301, nome: '+ Cheddar e Bacon', tipo: 'ADICIONAL', preco: 6.00, id_ingrediente: 4, qtd_extra: 40 },
+          ]
+        },
+        {
+          id: 4,
+          nome: 'Refrigerante Lata 350ml',
+          categoria: 'Bebidas',
+          preco: 6.50,
+          ativo: true,
+          emoji: '🥤',
+          receita: [
+            { id_ingrediente: 7, qtd: 1 },
+          ],
+          opcoes: [
+            { id: 401, nome: 'Com Gelo e Limão', tipo: 'REMOCAO', preco: 0, id_ingrediente: null, qtd_extra: 0 },
+          ]
+        },
+        {
+          id: 5,
+          nome: 'Milkshake Baunilha 400ml',
+          categoria: 'Sobremesas',
+          preco: 16.00,
+          ativo: true,
+          emoji: '🍨',
+          receita: [
+            { id_ingrediente: 8, qtd: 300 },
+          ],
+          opcoes: []
+        }
+      ],
+
+      // Carrinho atual no PDV (Pedido em estado ABERTO antes da confirmação)
+      carrinho: {
+        clienteId: null,
+        pagamento: 'PIX',
+        observacaoGeral: '',
+        itens: [] // { uid, produtoId, qtd, opcoesIds: [], obsItem: '' }
+      },
+
+      // Pedidos já confirmados no banco (EM_PREPARO, PRONTO, ENTREGUE, CANCELADO)
+      pedidos: [
+        {
+          id: 1041,
+          clienteNome: 'Mariana Costa',
+          atendente: 'Ana Paula Souza',
+          pagamento: 'CREDITO',
+          status: 'EM_PREPARO',
+          hora: '16:22',
+          total: 35.00,
+          custoTotal: 9.85,
+          itens: [
+            { nome: 'X-Burger Clássico', qtd: 1, precoUnit: 24.00, opcoes: ['+ Bacon Extra', 'SEM Cebola'], obs: 'Ponto da carne ao ponto' },
+            { nome: 'Refrigerante Lata 350ml', qtd: 1, precoUnit: 6.50, opcoes: [], obs: '' }
+          ]
+        },
+        {
+          id: 1042,
+          clienteNome: 'Balcão (Anônimo)',
+          atendente: 'Ana Paula Souza',
+          pagamento: 'PIX',
+          status: 'EM_PREPARO',
+          hora: '16:28',
+          total: 47.50,
+          custoTotal: 14.30,
+          itens: [
+            { nome: 'X-Bacon Supremo', qtd: 1, precoUnit: 29.50, opcoes: [], obs: '' },
+            { nome: 'Batata Frita Crocante (400g)', qtd: 1, precoUnit: 18.00, opcoes: [], obs: 'Bem sequinha' }
+          ]
+        },
+        {
+          id: 1040,
+          clienteNome: 'Lucas Fernandes',
+          atendente: 'Carlos Silva',
+          pagamento: 'DEBITO',
+          status: 'PRONTO',
+          hora: '16:10',
+          total: 24.00,
+          custoTotal: 8.30,
+          itens: [
+            { nome: 'X-Burger Clássico', qtd: 1, precoUnit: 24.00, opcoes: [], obs: '' }
+          ]
+        },
+        {
+          id: 1039,
+          clienteNome: 'Balcão (Anônimo)',
+          atendente: 'Ana Paula Souza',
+          pagamento: 'DINHEIRO',
+          status: 'ENTREGUE',
+          hora: '15:45',
+          total: 59.00,
+          custoTotal: 18.20,
+          itens: [
+            { nome: 'X-Bacon Supremo', qtd: 2, precoUnit: 29.50, opcoes: [], obs: '' }
+          ]
+        }
+      ],
+
+      // Histórico imutável de movimentações de estoque
+      movimentacoesEstoque: [
+        { id: 501, data: '24/11/2026 14:00', ingrediente: 'Pão Brioche', tipo: 'ENTRADA', qtd: '+50 UN', custoUnit: 1.80, motivo: 'Compra Fornecedor Padaria Central NF-892', responsavel: 'Julia Mendes' },
+        { id: 502, data: '24/11/2026 15:15', ingrediente: 'Bacon Fatiado', tipo: 'PERDA', qtd: '-150 G', custoUnit: 0.06, motivo: 'Descarte por validade vencida na câmara fria', responsavel: 'Julia Mendes' },
+        { id: 503, data: '24/11/2026 16:22', ingrediente: 'Hambúrguer Artesanal 160g', tipo: 'VENDA', qtd: '-1 UN', custoUnit: 4.50, motivo: 'Baixa automática Pedido #1041', responsavel: 'Ana Paula Souza' },
+      ],
+
+      // Filtros de UI
+      pdvCategoria: 'Todos',
+      pdvBusca: '',
+      estoqueBusca: '',
+      estoqueFiltroAlerta: false,
+    };
+
+    // -------------------------------------------------------------------------
+    // 2. FUNÇÕES AUXILIARES & REGRAS DE NEGÓCIO DO BANCO (VIEWS & FUNCTIONS)
+    // -------------------------------------------------------------------------
+
+    // Formata moeda BRL
+    function formatBRL(val) {
+      return Number(val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    // Validação oficial de CPF (fn_cpf_valido)
+    function validarCPF(cpf) {
+      cpf = cpf.replace(/[^\d]+/g, '');
+      if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+      let soma = 0, resto;
+      for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+      resto = (soma * 10) % 11;
+      if (resto === 10 || resto === 11) resto = 0;
+      if (resto !== parseInt(cpf.substring(9, 10))) return false;
+      soma = 0;
+      for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+      resto = (soma * 10) % 11;
+      if (resto === 10 || resto === 11) resto = 0;
+      return resto === parseInt(cpf.substring(10, 11));
+    }
+
+    // View: vw_disponibilidade_produtos (calcula quantas unidades podem ser feitas pelo ingrediente mais escasso)
+    function getDisponibilidadeProduto(produto) {
+      if (!produto.ativo || !produto.receita.length) return 0;
+      let maxUnidades = Infinity;
+      for (const itemReceita of produto.receita) {
+        const ing = DB.ingredientes.find(i => i.id === itemReceita.id_ingrediente);
+        if (!ing || ing.saldo <= 0) return 0;
+        const possivel = Math.floor(ing.saldo / itemReceita.qtd);
+        if (possivel < maxUnidades) maxUnidades = possivel;
+      }
+      return maxUnidades === Infinity ? 0 : maxUnidades;
+    }
+
+    // View: vw_produtos_custo (custo da receita baseado no custo médio ponderado)
+    function getCustoReceita(produto) {
+      let custo = 0;
+      for (const itemReceita of produto.receita) {
+        const ing = DB.ingredientes.find(i => i.id === itemReceita.id_ingrediente);
+        if (ing) custo += ing.custo_medio * itemReceita.qtd;
+      }
+      return custo;
+    }
+
+    // Toast Notification (Feedback rápido conforme Design System pág. 11)
+    function showToast(titulo, mensagem, tipo = 'success') {
+      const container = document.getElementById('toast-container');
+      const id = 'toast-' + Date.now();
+      const colors = {
+        success: 'border-l-4 border-l-[#16A34A] text-[#1E293B]',
+        error: 'border-l-4 border-l-[#DC2626] text-[#1E293B]',
+        warning: 'border-l-4 border-l-[#D97706] text-[#1E293B]',
+      };
+      const icons = {
+        success: '<i data-lucide="check-circle-2" class="w-5 h-5 text-[#16A34A] shrink-0"></i>',
+        error: '<i data-lucide="x-circle" class="w-5 h-5 text-[#DC2626] shrink-0"></i>',
+        warning: '<i data-lucide="alert-triangle" class="w-5 h-5 text-[#D97706] shrink-0"></i>',
+      };
+
+      const el = document.createElement('div');
+      el.id = id;
+      el.className = `pointer-events-auto bg-white border border-[#E2E8F0] ${colors[tipo]} rounded-lg shadow-lg p-3.5 w-80 flex items-start gap-3 transition-all`;
+      el.innerHTML = `
+        ${icons[tipo]}
+        <div class="flex-1">
+          <div class="text-xs font-bold">${titulo}</div>
+          <div class="text-xs text-[#64748B] mt-0.5">${mensagem}</div>
+        </div>
+      `;
+      container.appendChild(el);
+      lucide.createIcons();
+      setTimeout(() => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      }, 3800);
+    }
+
+    // Controle de Modais
+    function openModal(htmlContent) {
+      const backdrop = document.getElementById('modal-backdrop');
+      const box = document.getElementById('modal-box');
+      box.innerHTML = htmlContent;
+      backdrop.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeModal() {
+      document.getElementById('modal-backdrop').classList.add('hidden');
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. AUTENTICAÇÃO E CONTROLE DE ACESSO (RBAC)
+    // -------------------------------------------------------------------------
+    const MENU_CONFIG = [
+      {
+        section: 'OPERAÇÃO',
+        items: [
+          { id: 'pdv', label: 'Ponto de venda', icon: 'shopping-cart', roles: ['CAIXA', 'ADMIN'] },
+          { id: 'cozinha', label: 'Cozinha (KDS)', icon: 'chef-hat', roles: ['COZINHA', 'ADMIN'] },
+          { id: 'estoque', label: 'Estoque', icon: 'package', roles: ['ESTOQUE', 'ADMIN'] },
+        ]
+      },
+      {
+        section: 'ADMINISTRAÇÃO',
+        items: [
+          { id: 'produtos', label: 'Cardápio e produtos', icon: 'utensils', roles: ['ADMIN'] },
+          { id: 'funcionarios', label: 'Funcionários', icon: 'users', roles: ['ADMIN'] },
+          { id: 'relatorios', label: 'Relatórios', icon: 'bar-chart-3', roles: ['ADMIN'] },
+        ]
+      }
+    ];
+
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const loginInput = document.getElementById('login-user').value.trim().toLowerCase();
+      const user = DB.funcionarios.find(f => f.login.toLowerCase() === loginInput);
+      const errorBox = document.getElementById('login-error');
+
+      if (!user || !user.ativo) {
+        errorBox.classList.remove('hidden');
+        return;
+      }
+      errorBox.classList.add('hidden');
+      iniciarSessao(user);
+    });
+
+    function quickLogin(perfil) {
+      const user = DB.funcionarios.find(f => f.perfil === perfil && f.ativo);
+      if (user) iniciarSessao(user);
+    }
+
+    function iniciarSessao(user) {
+      DB.currentUser = user;
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app-shell').classList.remove('hidden');
+
+      document.getElementById('user-name-display').textContent = user.nome;
+      document.getElementById('user-role-badge').textContent = user.perfil;
+      document.getElementById('role-switcher').value = user.perfil;
+
+      // Redirecionamento automático para a tela principal do perfil
+      const defaultTabByRole = {
+        ADMIN: 'pdv',
+        CAIXA: 'pdv',
+        COZINHA: 'cozinha',
+        ESTOQUE: 'estoque'
+      };
+      DB.activeTab = defaultTabByRole[user.perfil] || 'pdv';
+
+      renderSidebar();
+      updateHeaderAlerts();
+      renderActiveScreen();
+      showToast(`Bem-vindo, ${user.nome}!`, `Sessão iniciada com perfil ${user.perfil}.`);
+    }
+
+    function logout() {
+      DB.currentUser = null;
+      document.getElementById('app-shell').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const labels = document.querySelectorAll('.sidebar-label');
+      if (sb.classList.contains('w-60')) {
+        sb.classList.remove('w-60');
+        sb.classList.add('w-[72px]');
+        labels.forEach(l => l.classList.add('hidden'));
+      } else {
+        sb.classList.remove('w-[72px]');
+        sb.classList.add('w-60');
+        labels.forEach(l => l.classList.remove('hidden'));
+      }
+    }
+
+    function renderSidebar() {
+      const nav = document.getElementById('sidebar-nav');
+      const role = DB.currentUser.perfil;
+      let html = '';
+
+      MENU_CONFIG.forEach(group => {
+        const visibleItems = group.items.filter(item => item.roles.includes(role));
+        if (!visibleItems.length) return;
+
+        html += `<div>
+          <div class="sidebar-label px-3 mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            ${group.section}
+          </div>
+          <div class="space-y-1">`;
+
+        visibleItems.forEach(item => {
+          const isActive = DB.activeTab === item.id;
+          const activeClasses = isActive
+            ? 'bg-[#EA580C] text-white font-semibold shadow-sm'
+            : 'text-slate-300 hover:bg-white/10 hover:text-white font-medium';
+
+          // Badge contador para cozinha
+          let badgeHtml = '';
+          if (item.id === 'cozinha') {
+            const emPreparo = DB.pedidos.filter(p => p.status === 'EM_PREPARO').length;
+            if (emPreparo > 0) {
+              badgeHtml = `<span class="sidebar-label ml-auto px-2 py-0.5 text-[11px] font-bold rounded-full ${isActive ? 'bg-white text-[#EA580C]' : 'bg-[#EA580C] text-white'}">${emPreparo}</span>`;
+            }
+          }
+
+          html += `
+            <button onclick="navigateTo('${item.id}')"
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition ${activeClasses}">
+              <i data-lucide="${item.icon}" class="w-5 h-5 shrink-0"></i>
+              <span class="sidebar-label truncate">${item.label}</span>
+              ${badgeHtml}
+            </button>`;
+        });
+
+        html += `</div></div>`;
+      });
+
+      nav.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function navigateTo(tabId) {
+      const role = DB.currentUser.perfil;
+      const allItems = MENU_CONFIG.flatMap(g => g.items);
+      const target = allItems.find(i => i.id === tabId);
+      if (!target || !target.roles.includes(role)) {
+        showToast('Acesso Negado', `Seu perfil (${role}) não possui permissão para esta tela.`, 'error');
+        return;
+      }
+      DB.activeTab = tabId;
+      renderSidebar();
+      renderActiveScreen();
+    }
+
+    function updateHeaderAlerts() {
+      const baixos = DB.ingredientes.filter(i => i.ativo && i.saldo <= i.minimo).length;
+      const alertBtn = document.getElementById('header-stock-alert');
+      if (baixos > 0 && ['ADMIN', 'ESTOQUE'].includes(DB.currentUser?.perfil)) {
+        alertBtn.classList.remove('hidden');
+        document.getElementById('header-stock-alert-text').textContent = `${baixos} insumo(s) em alerta`;
+      } else {
+        alertBtn.classList.add('hidden');
+      }
+    }
+
+    function renderActiveScreen() {
+      const titles = {
+        pdv: ['Ponto de Venda', 'Ponto de Venda e Gestão de Clientes (PDV)'],
+        cozinha: ['Cozinha (KDS)', 'Display de Preparo da Cozinha (KDS)'],
+        estoque: ['Estoque', 'Controle e Movimentação de Estoque'],
+        produtos: ['Cardápio e Produtos', 'Cadastro de Produtos e Fichas Técnicas'],
+        funcionarios: ['Funcionários', 'Gerenciamento de Funcionários e Acessos'],
+        relatorios: ['Relatórios', 'Relatórios e Indicadores Gerenciais'],
+      };
+
+      const [crumb, title] = titles[DB.activeTab] || ['Sistema', 'Painel'];
+      document.getElementById('breadcrumb-current').textContent = crumb;
+      document.getElementById('page-title').textContent = title;
+
+      const main = document.getElementById('main-content');
+      if (DB.activeTab === 'pdv') renderPDV(main);
+      else if (DB.activeTab === 'cozinha') renderCozinha(main);
+      else if (DB.activeTab === 'estoque') renderEstoque(main);
+      else if (DB.activeTab === 'produtos') renderProdutos(main);
+      else if (DB.activeTab === 'funcionarios') renderFuncionarios(main);
+      else if (DB.activeTab === 'relatorios') renderRelatorios(main);
+
+      lucide.createIcons();
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. TELA 2: PONTO DE VENDA (PDV / CAIXA & CLIENTES)
+    // -------------------------------------------------------------------------
+    function renderPDV(container) {
+      const filtrados = DB.produtos.filter(p => {
+        if (!p.ativo) return false;
+        const matchCat = DB.pdvCategoria === 'Todos' || p.categoria === DB.pdvCategoria;
+        const matchBusca = p.nome.toLowerCase().includes(DB.pdvBusca.toLowerCase());
+        return matchCat && matchBusca;
+      });
+
+      // Calcula totais do carrinho
+      let subtotalCarrinho = 0;
+      DB.carrinho.itens.forEach(item => {
+        const prod = DB.produtos.find(p => p.id === item.produtoId);
+        const extrasValor = item.opcoesIds.reduce((acc, opId) => {
+          const op = prod.opcoes.find(o => o.id === opId);
+          return acc + (op ? op.preco : 0);
+        }, 0);
+        subtotalCarrinho += (prod.preco + extrasValor) * item.qtd;
+      });
+
+      // Pedidos ativos recentes para acompanhamento rápido do caixa (PRONTO / EM_PREPARO)
+      const pedidosAcompanhamento = DB.pedidos.filter(p => ['EM_PREPARO', 'PRONTO'].includes(p.status));
+
+      container.innerHTML = `
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+          <!-- COLUNA ESQUERDA: CARDÁPIO E ACOMPANHAMENTO (8 cols) -->
+          <div class="xl:col-span-8 space-y-6">
+
+            <!-- Barra de Filtros e Busca -->
+            <div class="bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-xs space-y-4">
+              <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                  <i data-lucide="search" class="w-4 h-4 text-[#64748B] absolute left-3 top-3"></i>
+                  <input type="text" value="${DB.pdvBusca}" oninput="DB.pdvBusca = this.value; renderActiveScreen();"
+                    placeholder="Buscar produto no cardápio..."
+                    class="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E2E8F0] text-sm focus:outline-none focus:border-[#2563EB]" />
+                </div>
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                  ${DB.categorias.map(cat => `
+                    <button onclick="DB.pdvCategoria = '${cat}'; renderActiveScreen();"
+                      class="px-3.5 h-10 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
+                        DB.pdvCategoria === cat
+                          ? 'bg-[#EA580C] text-white'
+                          : 'bg-slate-100 text-[#64748B] hover:bg-slate-200 hover:text-[#1E293B]'
+                      }">
+                      ${cat}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Grid de Produtos (com vw_disponibilidade_produtos) -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
+                ${filtrados.map(prod => {
+                  const disp = getDisponibilidadeProduto(prod);
+                  const semEstoque = disp <= 0;
+                  return `
+                    <div class="bg-white border ${semEstoque ? 'border-red-200 bg-red-50/20 opacity-75' : 'border-[#E2E8F0] hover:border-[#EA580C]'} rounded-xl p-4 flex flex-col justify-between transition shadow-2xs">
+                      <div>
+                        <div class="flex items-start justify-between gap-2">
+                          <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-2xl shrink-0">
+                            ${prod.emoji}
+                          </div>
+                          <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                            semEstoque
+                              ? 'bg-red-100 text-[#DC2626]'
+                              : disp <= 5
+                                ? 'bg-amber-100 text-[#D97706]'
+                                : 'bg-green-100 text-[#16A34A]'
+                          }">
+                            ${semEstoque ? 'Indisponível' : `${disp} un. disp.`}
+                          </span>
+                        </div>
+                        <h3 class="font-semibold text-sm text-[#1E293B] mt-3">${prod.nome}</h3>
+                        <p class="text-xs text-[#64748B] mt-0.5">${prod.categoria}</p>
+                      </div>
+
+                      <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span class="font-bold text-base text-[#1E293B]">${formatBRL(prod.preco)}</span>
+                        <div class="flex items-center gap-1.5">
+                          <button ${semEstoque ? 'disabled' : ''} onclick="abrirModalCustomizacao(${prod.id})"
+                            title="Adicionais e Remoções"
+                            class="h-8 px-2.5 rounded-lg border border-[#E2E8F0] hover:bg-slate-50 text-xs font-medium text-[#1E293B] disabled:opacity-40 transition">
+                            Opções
+                          </button>
+                          <button ${semEstoque ? 'disabled' : ''} onclick="adicionarDiretoCarrinho(${prod.id})"
+                            class="h-8 w-8 rounded-lg bg-[#EA580C] hover:bg-[#C2410C] text-white flex items-center justify-center disabled:opacity-40 transition">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- Fila de Pedidos Ativos (Entrega / Cancelamento com Devolução de Estoque) -->
+            <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-xs">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h2 class="text-base font-semibold text-[#1E293B]">Pedidos em Andamento (Retirada & Cancelamento)</h2>
+                  <p class="text-xs text-[#64748B]">Pedidos prontos para entrega ou em preparo na cozinha</p>
+                </div>
+                <span class="text-xs font-medium text-[#64748B]">${pedidosAcompanhamento.length} ativo(s)</span>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50 border-y border-[#E2E8F0] text-[11px] font-semibold uppercase text-[#64748B]">
+                      <th class="py-2.5 px-3">Pedido</th>
+                      <th class="py-2.5 px-3">Cliente</th>
+                      <th class="py-2.5 px-3">Itens</th>
+                      <th class="py-2.5 px-3">Status</th>
+                      <th class="py-2.5 px-3 text-right">Total</th>
+                      <th class="py-2.5 px-3 text-right">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-[#E2E8F0] text-xs">
+                    ${pedidosAcompanhamento.length === 0 ? `
+                      <tr><td colspan="6" class="py-6 text-center text-[#64748B]">Nenhum pedido em preparo ou aguardando retirada.</td></tr>
+                    ` : pedidosAcompanhamento.map(ped => `
+                      <tr class="hover:bg-slate-50/70">
+                        <td class="py-3 px-3 font-bold text-[#1E293B]">#${ped.id}<div class="text-[11px] font-normal text-[#64748B]">${ped.hora}</div></td>
+                        <td class="py-3 px-3 font-medium">${ped.clienteNome}</td>
+                        <td class="py-3 px-3 text-[#64748B]">${ped.itens.map(i => `${i.qtd}x ${i.nome}`).join(', ')}</td>
+                        <td class="py-3 px-3">
+                          ${ped.status === 'PRONTO'
+                            ? '<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-green-100 text-[#16A34A]">Pronto</span>'
+                            : '<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-blue-100 text-[#2563EB]">Em preparo</span>'}
+                        </td>
+                        <td class="py-3 px-3 text-right font-bold">${formatBRL(ped.total)}</td>
+                        <td class="py-3 px-3 text-right space-x-1.5">
+                          ${ped.status === 'PRONTO' ? `
+                            <button onclick="entregarPedido(${ped.id})" class="px-2.5 py-1.5 rounded-lg bg-[#16A34A] hover:bg-green-700 text-white font-semibold transition">
+                              Entregar
+                            </button>
+                          ` : ''}
+                          ${ped.status === 'EM_PREPARO' ? `
+                            <button onclick="confirmarCancelamentoPedido(${ped.id})" class="px-2.5 py-1.5 rounded-lg border border-red-200 text-[#DC2626] hover:bg-red-50 font-semibold transition">
+                              Cancelar
+                            </button>
+                          ` : ''}
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUNA DIREITA: CARRINHO / PEDIDO ABERTO (4 cols) -->
+          <div class="xl:col-span-4">
+            <div class="bg-white rounded-xl border border-[#E2E8F0] shadow-xs flex flex-col sticky top-6">
+              <!-- Cabeçalho do Pedido -->
+              <div class="p-4 border-b border-[#E2E8F0] flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-base text-[#1E293B]">Pedido Atual</span>
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-[#64748B]">Aberto</span>
+                </div>
+                <button onclick="limparCarrinho()" class="text-xs text-[#DC2626] hover:underline font-medium">Limpar</button>
+              </div>
+
+              <!-- Identificação do Cliente -->
+              <div class="p-4 bg-slate-50/70 border-b border-[#E2E8F0] space-y-2">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-semibold text-[#1E293B]">Cliente (Opcional)</label>
+                  <button onclick="abrirModalNovoCliente()" class="text-xs font-semibold text-[#2563EB] hover:underline flex items-center gap-1">
+                    <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Novo Cliente
+                  </button>
+                </div>
+                <select onchange="DB.carrinho.clienteId = this.value ? Number(this.value) : null"
+                  class="w-full h-9 px-2.5 rounded-lg border border-[#E2E8F0] bg-white text-xs focus:outline-none focus:border-[#2563EB]">
+                  <option value="">Venda de Balcão (Anônimo)</option>
+                  ${DB.clientes.map(c => `
+                    <option value="${c.id}" ${DB.carrinho.clienteId === c.id ? 'selected' : ''}>
+                      ${c.nome} • CPF: ${c.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')}
+                    </option>
+                  `).join('')}
+                </select>
+              </div>
+
+              <!-- Lista de Itens do Carrinho -->
+              <div class="p-4 flex-1 max-h-[340px] overflow-y-auto space-y-3">
+                ${DB.carrinho.itens.length === 0 ? `
+                  <div class="py-10 text-center">
+                    <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-2 text-[#64748B]">
+                      <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    </div>
+                    <p class="text-xs font-medium text-[#1E293B]">Nenhum item adicionado</p>
+                    <p class="text-[11px] text-[#64748B] mt-0.5">Selecione produtos ao lado para montar o pedido</p>
+                  </div>
+                ` : DB.carrinho.itens.map(item => {
+                  const prod = DB.produtos.find(p => p.id === item.produtoId);
+                  const ops = item.opcoesIds.map(id => prod.opcoes.find(o => o.id === id)).filter(Boolean);
+                  const unitTotal = prod.preco + ops.reduce((s, o) => s + o.preco, 0);
+
+                  return `
+                    <div class="p-3 rounded-lg border border-[#E2E8F0] bg-white space-y-2">
+                      <div class="flex items-start justify-between gap-2">
+                        <div>
+                          <div class="text-xs font-bold text-[#1E293B]">${prod.nome}</div>
+                          <div class="text-xs font-semibold text-[#EA580C]">${formatBRL(unitTotal)} x ${item.qtd} = ${formatBRL(unitTotal * item.qtd)}</div>
+                        </div>
+                        <button onclick="removerItemCarrinho('${item.uid}')" class="text-slate-400 hover:text-[#DC2626] p-1">
+                          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                      </div>
+
+                      ${ops.length > 0 ? `
+                        <div class="flex flex-wrap gap-1">
+                          ${ops.map(o => `
+                            <span class="px-1.5 py-0.5 rounded text-[10px] font-medium ${o.tipo === 'ADICIONAL' ? 'bg-orange-50 text-[#EA580C]' : 'bg-slate-100 text-[#64748B]'}">
+                              ${o.nome}
+                            </span>
+                          `).join('')}
+                        </div>
+                      ` : ''}
+
+                      ${item.obsItem ? `<div class="text-[11px] text-[#64748B] italic">"${item.obsItem}"</div>` : ''}
+
+                      <div class="flex items-center justify-between pt-1">
+                        <div class="flex items-center gap-2">
+                          <button onclick="alterarQtdCarrinho('${item.uid}', -1)" class="w-6 h-6 rounded border border-[#E2E8F0] flex items-center justify-center text-xs font-bold hover:bg-slate-50">-</button>
+                          <span class="text-xs font-bold w-4 text-center">${item.qtd}</span>
+                          <button onclick="alterarQtdCarrinho('${item.uid}', 1)" class="w-6 h-6 rounded border border-[#E2E8F0] flex items-center justify-center text-xs font-bold hover:bg-slate-50">+</button>
+                        </div>
+                        <button onclick="abrirModalCustomizacao(${prod.id}, '${item.uid}')" class="text-[11px] text-[#2563EB] hover:underline font-medium">
+                          Editar opções
+                        </button>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+
+              <!-- Pagamento e Finalização -->
+              <div class="p-4 border-t border-[#E2E8F0] bg-slate-50/70 space-y-3 rounded-b-xl">
+                <div>
+                  <label class="block text-xs font-semibold text-[#1E293B] mb-1">Forma de Pagamento <span class="text-red-600">*</span></label>
+                  <div class="grid grid-cols-4 gap-1.5">
+                    ${['PIX', 'CREDITO', 'DEBITO', 'DINHEIRO'].map(pg => `
+                      <button onclick="DB.carrinho.pagamento = '${pg}'; renderActiveScreen();"
+                        class="py-1.5 rounded-lg border text-[11px] font-semibold transition ${
+                          DB.carrinho.pagamento === pg
+                            ? 'bg-[#172B4D] text-white border-[#172B4D]'
+                            : 'bg-white text-[#64748B] border-[#E2E8F0] hover:border-slate-300'
+                        }">
+                        ${pg}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <div class="pt-2 border-t border-[#E2E8F0] flex items-center justify-between">
+                  <span class="text-sm font-semibold text-[#64748B]">Total a Pagar</span>
+                  <span class="text-xl font-bold text-[#1E293B]">${formatBRL(subtotalCarrinho)}</span>
+                </div>
+
+                <button onclick="finalizarPedidoPDV()" ${DB.carrinho.itens.length === 0 ? 'disabled' : ''}
+                  class="w-full h-11 bg-[#EA580C] hover:bg-[#C2410C] disabled:bg-slate-300 text-white font-semibold text-sm rounded-lg transition flex items-center justify-center gap-2 shadow-sm">
+                  <i data-lucide="check-circle" class="w-4 h-4"></i>
+                  Confirmar e Enviar p/ Cozinha
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function adicionarDiretoCarrinho(produtoId) {
+      const prod = DB.produtos.find(p => p.id === produtoId);
+      const disp = getDisponibilidadeProduto(prod);
+      const jaNoCarrinho = DB.carrinho.itens
+        .filter(i => i.produtoId === produtoId)
+        .reduce((s, i) => s + i.qtd, 0);
+
+      if (jaNoCarrinho + 1 > disp) {
+        showToast('Limite de Estoque', `Apenas ${disp} unidade(s) disponível(is) para ${prod.nome}.`, 'warning');
+        return;
+      }
+
+      const existente = DB.carrinho.itens.find(i => i.produtoId === produtoId && i.opcoesIds.length === 0 && !i.obsItem);
+      if (existente) {
+        existente.qtd += 1;
+      } else {
+        DB.carrinho.itens.push({
+          uid: 'item-' + Date.now() + Math.random(),
+          produtoId,
+          qtd: 1,
+          opcoesIds: [],
+          obsItem: ''
+        });
+      }
+      renderActiveScreen();
+    }
+
+    function alterarQtdCarrinho(uid, delta) {
+      const idx = DB.carrinho.itens.findIndex(i => i.uid === uid);
+      if (idx === -1) return;
+      const item = DB.carrinho.itens[idx];
+      const prod = DB.produtos.find(p => p.id === item.produtoId);
+      const disp = getDisponibilidadeProduto(prod);
+
+      if (delta > 0 && item.qtd + 1 > disp) {
+        showToast('Estoque Insuficiente', `Disponibilidade máxima atingida (${disp} un.).`, 'warning');
+        return;
+      }
+
+      item.qtd += delta;
+      if (item.qtd <= 0) DB.carrinho.itens.splice(idx, 1);
+      renderActiveScreen();
+    }
+
+    function removerItemCarrinho(uid) {
+      DB.carrinho.itens = DB.carrinho.itens.filter(i => i.uid !== uid);
+      renderActiveScreen();
+    }
+
+    function limparCarrinho() {
+      DB.carrinho.itens = [];
+      DB.carrinho.clienteId = null;
+      renderActiveScreen();
+    }
+
+    // Modal de Customização de Produto (Adicionais e Remoções)
+    function abrirModalCustomizacao(produtoId, editUid = null) {
+      const prod = DB.produtos.find(p => p.id === produtoId);
+      const itemEdit = editUid ? DB.carrinho.itens.find(i => i.uid === editUid) : null;
+      const selecionados = itemEdit ? itemEdit.opcoesIds : [];
+      const obsAtual = itemEdit ? itemEdit.obsItem : '';
+
+      openModal(`
+        <div class="p-5 border-b border-[#E2E8F0] flex items-center justify-between">
+          <div>
+            <h3 class="font-bold text-base text-[#1E293B]">Customizar ${prod.nome}</h3>
+            <p class="text-xs text-[#64748B]">Selecione adicionais, remoções ou observações para a cozinha</p>
+          </div>
+          <button onclick="closeModal()" class="text-[#64748B] hover:text-[#1E293B]"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="p-5 space-y-4">
+          ${prod.opcoes.length > 0 ? `
+            <div>
+              <label class="block text-xs font-semibold text-[#1E293B] mb-2">Opcionais Permitidos</label>
+              <div class="space-y-2">
+                ${prod.opcoes.map(op => `
+                  <label class="flex items-center justify-between p-2.5 rounded-lg border border-[#E2E8F0] hover:bg-slate-50 cursor-pointer">
+                    <div class="flex items-center gap-2.5">
+                      <input type="checkbox" name="modal-opcao" value="${op.id}" ${selecionados.includes(op.id) ? 'checked' : ''}
+                        class="w-4 h-4 accent-[#EA580C] rounded" />
+                      <span class="text-xs font-medium text-[#1E293B]">${op.nome}</span>
+                    </div>
+                    <span class="text-xs font-semibold ${op.preco > 0 ? 'text-[#EA580C]' : 'text-[#64748B]'}">
+                      ${op.preco > 0 ? '+ ' + formatBRL(op.preco) : 'Sem custo'}
+                    </span>
+                  </label>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+          <div>
+            <label class="block text-xs font-semibold text-[#1E293B] mb-1">Observação livre para cozinha</label>
+            <input type="text" id="modal-obs-item" value="${obsAtual}" placeholder="Ex.: Carne bem passada, cortar ao meio..."
+              class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-xs focus:outline-none focus:border-[#2563EB]" />
+          </div>
+        </div>
+        <div class="p-4 bg-slate-50 border-t border-[#E2E8F0] flex justify-end gap-2">
+          <button onclick="closeModal()" class="h-10 px-4 rounded-lg border border-[#E2E8F0] bg-white text-xs font-semibold text-[#1E293B]">Cancelar</button>
+          <button onclick="salvarCustomizacao(${prod.id}, '${editUid || ''}')" class="h-10 px-4 rounded-lg bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-semibold">
+            Confirmar Item
+          </button>
+        </div>
+      `);
+    }
+
+    function salvarCustomizacao(produtoId, editUid) {
+      const checks = Array.from(document.querySelectorAll('input[name="modal-opcao"]:checked')).map(el => Number(el.value));
+      const obs = document.getElementById('modal-obs-item').value.trim();
+
+      if (editUid) {
+        const item = DB.carrinho.itens.find(i => i.uid === editUid);
+        if (item) {
+          item.opcoesIds = checks;
+          item.obsItem = obs;
+        }
+      } else {
+        DB.carrinho.itens.push({
+          uid: 'item-' + Date.now(),
+          produtoId,
+          qtd: 1,
+          opcoesIds: checks,
+          obsItem: obs
+        });
+      }
+      closeModal();
+      renderActiveScreen();
+    }
+
+    // Modal Cadastro Rápido de Cliente (com fn_cpf_valido)
+    function abrirModalNovoCliente() {
+      openModal(`
+        <div class="p-5 border-b border-[#E2E8F0] flex items-center justify-between">
+          <h3 class="font-bold text-base text-[#1E293B]">Cadastrar Novo Cliente</h3>
+          <button onclick="closeModal()" class="text-[#64748B] hover:text-[#1E293B]"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form onsubmit="salvarNovoCliente(event)" class="p-5 space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-[#1E293B] mb-1">Nome Completo <span class="text-red-600">*</span></label>
+            <input type="text" id="cli-nome" required placeholder="Ex.: João da Silva"
+              class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm focus:outline-none focus:border-[#2563EB]" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#1E293B] mb-1">CPF (11 dígitos válidos) <span class="text-red-600">*</span></label>
+            <input type="text" id="cli-cpf" required maxlength="14" placeholder="000.000.000-00"
+              class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm focus:outline-none focus:border-[#2563EB]" />
+            <p id="cli-cpf-erro" class="hidden text-xs text-red-600 mt-1">CPF inválido (fn_cpf_valido recusou os dígitos verificadores).</p>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#1E293B] mb-1">Telefone / WhatsApp</label>
+            <input type="text" id="cli-tel" placeholder="(11) 99999-9999"
+              class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm focus:outline-none focus:border-[#2563EB]" />
+          </div>
+          <div class="pt-2 flex justify-end gap-2">
+            <button type="button" onclick="closeModal()" class="h-10 px-4 rounded-lg border border-[#E2E8F0] text-xs font-semibold">Cancelar</button>
+            <button type="submit" class="h-10 px-4 rounded-lg bg-[#EA580C] text-white text-xs font-semibold">Salvar Cliente</button>
+          </div>
+        </form>
+      `);
+    }
+
+    function salvarNovoCliente(e) {
+      e.preventDefault();
+      const nome = document.getElementById('cli-nome').value.trim();
+      const cpfRaw = document.getElementById('cli-cpf').value.replace(/\D/g, '');
+      const tel = document.getElementById('cli-tel').value.trim();
+      const erroEl = document.getElementById('cli-cpf-erro');
+
+      if (!validarCPF(cpfRaw)) {
+        erroEl.classList.remove('hidden');
+        document.getElementById('cli-cpf').classList.add('border-red-500');
+        return;
+      }
+
+      const novo = { id: Date.now(), nome, cpf: cpfRaw, telefone: tel || 'Não informado' };
+      DB.clientes.push(novo);
+      DB.carrinho.clienteId = novo.id;
+      closeModal();
+      renderActiveScreen();
+      showToast('Cliente Cadastrado', `${nome} vinculado ao pedido atual.`);
+    }
+
+    // Procedure: sp_alterar_status_pedido (ABERTO -> EM_PREPARO com baixa atômica de estoque)
+    function finalizarPedidoPDV() {
+      if (!DB.carrinho.itens.length) return;
+
+      // 1. Calcular consumo total de insumos para validar atomicidade
+      const consumoNecessario = {}; // { id_ingrediente: qtdTotal }
+      let totalVenda = 0;
+      let custoTotal = 0;
+      const itensFormatados = [];
+
+      for (const item of DB.carrinho.itens) {
+        const prod = DB.produtos.find(p => p.id === item.produtoId);
+        // Receita base
+        for (const rec of prod.receita) {
+          consumoNecessario[rec.id_ingrediente] = (consumoNecessario[rec.id_ingrediente] || 0) + (rec.qtd * item.qtd);
+        }
+        // Adicionais
+        let valorOps = 0;
+        const nomesOps = [];
+        for (const opId of item.opcoesIds) {
+          const op = prod.opcoes.find(o => o.id === opId);
+          if (op) {
+            valorOps += op.preco;
+            nomesOps.push(op.nome);
+            if (op.id_ingrediente && op.qtd_extra > 0) {
+              consumoNecessario[op.id_ingrediente] = (consumoNecessario[op.id_ingrediente] || 0) + (op.qtd_extra * item.qtd);
+            }
+          }
+        }
+        totalVenda += (prod.preco + valorOps) * item.qtd;
+        itensFormatados.push({
+          nome: prod.nome,
+          qtd: item.qtd,
+          precoUnit: prod.preco + valorOps,
+          opcoes: nomesOps,
+          obs: item.obsItem
+        });
+      }
+
+      // 2. Verificar se algum ingrediente ficará negativo (Regra de Ouro do Banco)
+      for (const [ingIdStr, qtdReq] of Object.entries(consumoNecessario)) {
+        const ing = DB.ingredientes.find(i => i.id === Number(ingIdStr));
+        if (!ing || ing.saldo < qtdReq) {
+          showToast('Bloqueio do Banco de Dados', `Saldo insuficiente de "${ing ? ing.nome : 'Insumo'}". Nenhum item foi baixado.`, 'error');
+          return;
+        }
+      }
+
+      // 3. Executar baixa automática e registrar no extrato imutável
+      const novoPedidoId = Math.max(...DB.pedidos.map(p => p.id), 1040) + 1;
+      const agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      for (const [ingIdStr, qtdReq] of Object.entries(consumoNecessario)) {
+        const ing = DB.ingredientes.find(i => i.id === Number(ingIdStr));
+        ing.saldo = Number((ing.saldo - qtdReq).toFixed(2));
+        custoTotal += ing.custo_medio * qtdReq;
+
+        DB.movimentacoesEstoque.unshift({
+          id: Date.now() + Math.random(),
+          data: `24/11/2026 ${agora}`,
+          ingrediente: ing.nome,
+          tipo: 'VENDA',
+          qtd: `-${qtdReq} ${ing.unidade}`,
+          custoUnit: ing.custo_medio,
+          motivo: `Baixa automática Pedido #${novoPedidoId}`,
+          responsavel: DB.currentUser.nome
+        });
+      }
+
+      const cli = DB.clientes.find(c => c.id === DB.carrinho.clienteId);
+      DB.pedidos.unshift({
+        id: novoPedidoId,
+        clienteNome: cli ? cli.nome : 'Balcão (Anônimo)',
+        atendente: DB.currentUser.nome,
+        pagamento: DB.carrinho.pagamento,
+        status: 'EM_PREPARO',
+        hora: agora,
+        total: totalVenda,
+        custoTotal: custoTotal,
+        itens: itensFormatados,
+        consumoBaixado: consumoNecessario
+      });
+
+      limparCarrinho();
+      updateHeaderAlerts();
+      renderSidebar();
+      showToast(`Pedido #${novoPedidoId} Confirmado!`, 'Enviado para a cozinha (EM_PREPARO) e estoque baixado.');
+    }
+
+    function entregarPedido(pedidoId) {
+      const ped = DB.pedidos.find(p => p.id === pedidoId);
+      if (ped && ped.status === 'PRONTO') {
+        ped.status = 'ENTREGUE';
+        renderActiveScreen();
+        showToast(`Pedido #${pedidoId} Entregue`, 'Status atualizado para ENTREGUE.');
+      }
+    }
+
+    // Modal de Confirmação Crítica (Cancelamento com devolução de ingredientes - Design System pág. 11)
+    function confirmarCancelamentoPedido(pedidoId) {
+      openModal(`
+        <div class="p-6 space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-amber-100 text-[#D97706] flex items-center justify-center shrink-0">
+              <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-lg font-bold text-[#1E293B]">Cancelar pedido #${pedidoId}?</h3>
+          </div>
+          <p class="text-sm text-[#64748B]">
+            Deseja realmente cancelar este pedido? Como ele está <strong>EM PREPARO</strong>, essa operação gerará a devolução automática dos ingredientes baixados ao estoque.
+          </p>
+          <div class="pt-2 flex justify-end gap-2.5">
+            <button onclick="closeModal()" class="h-10 px-4 rounded-lg border border-[#E2E8F0] bg-white text-sm font-semibold text-[#1E293B] hover:bg-slate-50">
+              Voltar
+            </button>
+            <button onclick="executarCancelamentoPedido(${pedidoId})" class="h-10 px-4 rounded-lg bg-[#DC2626] hover:bg-red-700 text-white text-sm font-semibold">
+              Confirmar cancelamento
+            </button>
+          </div>
+        </div>
+      `);
+    }
+
+    function executarCancelamentoPedido(pedidoId) {
+      const ped = DB.pedidos.find(p => p.id === pedidoId);
+      if (!ped || ped.status !== 'EM_PREPARO') {
+        closeModal();
+        return;
+      }
+
+      // Devolve ingredientes se houver mapeamento
+      if (ped.consumoBaixado) {
+        const agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        for (const [ingIdStr, qtdDev] of Object.entries(ped.consumoBaixado)) {
+          const ing = DB.ingredientes.find(i => i.id === Number(ingIdStr));
+          if (ing) {
+            ing.saldo = Number((ing.saldo + qtdDev).toFixed(2));
+            DB.movimentacoesEstoque.unshift({
+              id: Date.now() + Math.random(),
+              data: `24/11/2026 ${agora}`,
+              ingrediente: ing.nome,
+              tipo: 'ESTORNO',
+              qtd: `+${qtdDev} ${ing.unidade}`,
+              custoUnit: ing.custo_medio,
+              motivo: `Devolução por cancelamento do Pedido #${pedidoId}`,
+              responsavel: DB.currentUser.nome
+            });
+          }
+        }
+      }
+
+      ped.status = 'CANCELADO';
+      closeModal();
+      updateHeaderAlerts();
+      renderSidebar();
+      renderActiveScreen();
+      showToast(`Pedido #${pedidoId} Cancelado`, 'Ingredientes devolvidos ao saldo do estoque.', 'warning');
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. TELA 3: DISPLAY DE PREPARO DA COZINHA (KDS - vw_cozinha)
+    // -------------------------------------------------------------------------
+    function renderCozinha(container) {
+      // Ordenado cronologicamente do mais antigo para o mais novo (vw_cozinha)
+      const fila = DB.pedidos
+        .filter(p => p.status === 'EM_PREPARO')
+        .slice()
+        .reverse();
+
+      container.innerHTML = `
+        <div class="space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-[#E2E8F0]">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-blue-50 text-[#2563EB] flex items-center justify-center">
+                <i data-lucide="flame" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h2 class="text-base font-bold text-[#1E293B]">Fila de Produção em Tempo Real (vw_cozinha)</h2>
+                <p class="text-xs text-[#64748B]">Ordenado cronologicamente do mais antigo para o mais recente</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-3 py-1.5 rounded-lg bg-blue-100 text-[#2563EB] text-xs font-bold">
+                ${fila.length} pedido(s) na chapa
+              </span>
+            </div>
+          </div>
+
+          ${fila.length === 0 ? `
+            <div class="bg-white rounded-xl border border-[#E2E8F0] p-12 text-center">
+              <div class="w-14 h-14 rounded-full bg-green-50 text-[#16A34A] flex items-center justify-center mx-auto mb-3">
+                <i data-lucide="check-circle-2" class="w-7 h-7"></i>
+              </div>
+              <h3 class="text-base font-bold text-[#1E293B]">Fila zerada!</h3>
+              <p class="text-xs text-[#64748B] mt-1">Nenhum pedido aguardando preparo no momento.</p>
+            </div>
+          ` : `
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              ${fila.map((ped, index) => `
+                <div class="bg-white rounded-xl border-2 ${index === 0 ? 'border-[#EA580C]' : 'border-[#E2E8F0]'} shadow-sm flex flex-col justify-between overflow-hidden">
+                  <div>
+                    <!-- Topo do Ticket -->
+                    <div class="px-4 py-3 ${index === 0 ? 'bg-orange-50 border-b border-orange-200' : 'bg-slate-50 border-b border-[#E2E8F0]'} flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-base text-[#1E293B]">#${ped.id}</span>
+                        ${index === 0 ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#EA580C] text-white">PRIORIDADE</span>' : ''}
+                      </div>
+                      <div class="flex items-center gap-1.5 text-xs font-semibold text-[#64748B]">
+                        <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                        <span>${ped.hora}</span>
+                      </div>
+                    </div>
+
+                    <div class="px-4 py-2 bg-white border-b border-slate-100 text-xs text-[#64748B] flex justify-between">
+                      <span>Cliente: <strong class="text-[#1E293B]">${ped.clienteNome}</strong></span>
+                      <span>Atend.: ${ped.atendente.split(' ')[0]}</span>
+                    </div>
+
+                    <!-- Itens do Pedido -->
+                    <div class="p-4 space-y-3">
+                      ${ped.itens.map(item => `
+                        <div class="p-3 rounded-lg bg-slate-50 border border-slate-200/80 space-y-1.5">
+                          <div class="flex items-start gap-2">
+                            <span class="px-2 py-0.5 rounded bg-[#172B4D] text-white font-bold text-xs">${item.qtd}x</span>
+                            <span class="font-bold text-sm text-[#1E293B]">${item.nome}</span>
+                          </div>
+                          ${item.opcoes.length > 0 ? `
+                            <div class="pl-8 flex flex-wrap gap-1.5">
+                              ${item.opcoes.map(op => `
+                                <span class="px-2 py-0.5 rounded text-xs font-bold ${
+                                  op.startsWith('SEM')
+                                    ? 'bg-red-100 text-[#DC2626]'
+                                    : 'bg-amber-100 text-amber-900'
+                                }">
+                                  ${op}
+                                </span>
+                              `).join('')}
+                            </div>
+                          ` : ''}
+                          ${item.obs ? `
+                            <div class="pl-8 text-xs font-medium text-[#2563EB] flex items-center gap-1">
+                              <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                              <span>Obs: ${item.obs}</span>
+                            </div>
+                          ` : ''}
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+
+                  <!-- Botão Concluir Preparo -->
+                  <div class="p-4 pt-0">
+                    <button onclick="concluirPreparoCozinha(${ped.id})"
+                      class="w-full h-11 bg-[#16A34A] hover:bg-green-700 text-white font-bold text-sm rounded-lg transition flex items-center justify-center gap-2 shadow-xs">
+                      <i data-lucide="check" class="w-5 h-5"></i>
+                      Marcar como PRONTO
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function concluirPreparoCozinha(pedidoId) {
+      const ped = DB.pedidos.find(p => p.id === pedidoId);
+      if (ped && ped.status === 'EM_PREPARO') {
+        ped.status = 'PRONTO';
+        renderSidebar();
+        renderActiveScreen();
+        showToast(`Pedido #${pedidoId} PRONTO!`, 'Atendimento notificado para retirada.');
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. TELA 4: CONTROLE E MOVIMENTAÇÃO DE ESTOQUE (vw_estoque_ingredientes)
+    // -------------------------------------------------------------------------
+    function renderEstoque(container) {
+      const totalItens = DB.ingredientes.length;
+      const itensBaixos = DB.ingredientes.filter(i => i.saldo <= i.minimo).length;
+      const capitalParado = DB.ingredientes.reduce((acc, i) => acc + (i.saldo * i.custo_medio), 0);
+
+      const listaFiltrada = DB.ingredientes.filter(i => {
+        const matchNome = i.nome.toLowerCase().includes(DB.estoqueBusca.toLowerCase());
+        const matchAlerta = !DB.estoqueFiltroAlerta || i.saldo <= i.minimo;
+        return matchNome && matchAlerta;
+      });
+
+      container.innerHTML = `
+        <div class="space-y-6">
+          <!-- Cards de Indicadores (Design System pág. 6) -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-2xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-[#64748B]">Insumos Cadastrados</span>
+                <div class="w-8 h-8 rounded-lg bg-blue-50 text-[#2563EB] flex items-center justify-center">
+                  <i data-lucide="package" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="text-2xl font-bold text-[#1E293B] mt-2">${totalItens}</div>
+              <div class="text-xs text-[#64748B] mt-1">Matérias-primas e itens de revenda</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-2xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-[#64748B]">Atenção / Estoque Baixo</span>
+                <div class="w-8 h-8 rounded-lg bg-amber-50 text-[#D97706] flex items-center justify-center">
+                  <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="text-2xl font-bold ${itensBaixos > 0 ? 'text-[#D97706]' : 'text-[#16A34A]'} mt-2">${itensBaixos}</div>
+              <div class="text-xs text-[#64748B] mt-1">Itens abaixo ou no limite mínimo</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-2xs">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-[#64748B]">Capital Investido em Estoque</span>
+                <div class="w-8 h-8 rounded-lg bg-green-50 text-[#16A34A] flex items-center justify-center">
+                  <i data-lucide="dollar-sign" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="text-2xl font-bold text-[#1E293B] mt-2">${formatBRL(capitalParado)}</div>
+              <div class="text-xs text-[#64748B] mt-1">Calculado pelo Custo Médio Ponderado</div>
+            </div>
+          </div>
+
+          <!-- Tabela de Saldos (vw_estoque_ingredientes) -->
+          <div class="bg-white rounded-xl border border-[#E2E8F0] shadow-xs overflow-hidden">
+            <div class="p-4 border-b border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex flex-wrap items-center gap-2.5 flex-1">
+                <div class="relative w-full sm:w-64">
+                  <i data-lucide="search" class="w-4 h-4 text-[#64748B] absolute left-3 top-3"></i>
+                  <input type="text" value="${DB.estoqueBusca}" oninput="DB.estoqueBusca = this.value; renderActiveScreen();"
+                    placeholder="Buscar ingrediente..."
+                    class="w-full h-10 pl-9 pr-3 rounded-lg border border-[#E2E8F0] text-xs focus:outline-none focus:border-[#2563EB]" />
+                </div>
+                <button onclick="DB.estoqueFiltroAlerta = !DB.estoqueFiltroAlerta; renderActiveScreen();"
+                  class="h-10 px-3 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition ${
+                    DB.estoqueFiltroAlerta ? 'bg-amber-50 border-amber-300 text-amber-800' : 'bg-white border-[#E2E8F0] text-[#64748B]'
+                  }">
+                  <i data-lucide="filter" class="w-3.5 h-3.5"></i> Apenas em Alerta
+                </button>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button onclick="abrirModalNovoInsumo()" class="h-10 px-3.5 rounded-lg border border-[#E2E8F0] hover:bg-slate-50 text-xs font-semibold text-[#1E293B] flex items-center gap-1.5">
+                  <i data-lucide="plus" class="w-4 h-4"></i> Novo Insumo
+                </button>
+                <button onclick="abrirModalMovimentacao('ENTRADA')" class="h-10 px-3.5 rounded-lg bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-semibold flex items-center gap-1.5">
+                  <i data-lucide="arrow-down-circle" class="w-4 h-4"></i> Lançar Compra
+                </button>
+                <button onclick="abrirModalMovimentacao('PERDA')" class="h-10 px-3.5 rounded-lg bg-[#DC2626] hover:bg-red-700 text-white text-xs font-semibold flex items-center gap-1.5">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i> Registrar Perda
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-[#E2E8F0] text-[11px] font-semibold uppercase text-[#64748B]">
+                    <th class="py-3 px-4">Ingrediente</th>
+                    <th class="py-3 px-4 text-right">Saldo Atual</th>
+                    <th class="py-3 px-4 text-right">Est. Mínimo</th>
+                    <th class="py-3 px-4 text-right">Custo Médio</th>
+                    <th class="py-3 px-4 text-right">Valor em Estoque</th>
+                    <th class="py-3 px-4">Situação</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#E2E8F0] text-xs">
+                  ${listaFiltrada.map(ing => {
+                    const semEstoque = ing.saldo <= 0;
+                    const baixo = ing.saldo > 0 && ing.saldo <= ing.minimo;
+                    return `
+                      <tr class="h-12 hover:bg-slate-50/70">
+                        <td class="py-3 px-4 font-semibold text-[#1E293B]">${ing.nome}</td>
+                        <td class="py-3 px-4 text-right font-bold">${ing.saldo} ${ing.unidade}</td>
+                        <td class="py-3 px-4 text-right text-[#64748B]">${ing.minimo} ${ing.unidade}</td>
+                        <td class="py-3 px-4 text-right text-[#64748B]">${formatBRL(ing.custo_medio)} / ${ing.unidade}</td>
+                        <td class="py-3 px-4 text-right font-semibold">${formatBRL(ing.saldo * ing.custo_medio)}</td>
+                        <td class="py-3 px-4">
+                          ${semEstoque
+                            ? '<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-100 text-[#DC2626]">Sem estoque</span>'
+                            : baixo
+                              ? '<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-100 text-[#D97706]">Estoque baixo</span>'
+                              : '<span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-green-100 text-[#16A34A]">Normal</span>'}
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Extrato Auditável Imutável (movimentacoes_estoque) -->
+          <div class="bg-white rounded-xl border border-[#E2E8F0] shadow-xs overflow-hidden">
+            <div class="p-4 border-b border-[#E2E8F0] flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-bold text-[#1E293B]">Histórico Auditável de Movimentações (Extrato Imutável)</h3>
+                <p class="text-xs text-[#64748B]">Registros protegidos contra edição ou exclusão</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-md bg-slate-100 text-[#64748B] text-[11px] font-semibold flex items-center gap-1">
+                <i data-lucide="lock" class="w-3 h-3"></i> Somente Leitura
+              </span>
+            </div>
+            <div class="overflow-x-auto max-h-64">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-[#E2E8F0] text-[11px] font-semibold uppercase text-[#64748B]">
+                    <th class="py-2.5 px-4">Data/Hora</th>
+                    <th class="py-2.5 px-4">Tipo</th>
+                    <th class="py-2.5 px-4">Ingrediente</th>
+                    <th class="py-2.5 px-4 text-right">Qtd.</th>
+                    <th class="py-2.5 px-4">Justificativa / Motivo</th>
+                    <th class="py-2.5 px-4">Responsável</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#E2E8F0] text-xs">
+                  ${DB.movimentacoesEstoque.map(mov => `
+                    <tr>
+                      <td class="py-2.5 px-4 text-[#64748B]">${mov.data}</td>
+                      <td class="py-2.5 px-4">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
+                          mov.tipo === 'ENTRADA' || mov.tipo === 'ESTORNO'
+                            ? 'bg-green-100 text-[#16A34A]'
+                            : mov.tipo === 'PERDA'
+                              ? 'bg-red-100 text-[#DC2626]'
+                              : 'bg-blue-100 text-[#2563EB]'
+                        }">${mov.tipo}</span>
+                      </td>
+                      <td class="py-2.5 px-4 font-semibold">${mov.ingrediente}</td>
+                      <td class="py-2.5 px-4 text-right font-bold">${mov.qtd}</td>
+                      <td class="py-2.5 px-4 text-[#64748B]">${mov.motivo}</td>
+                      <td class="py-2.5 px-4">${mov.responsavel}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function abrirModalNovoInsumo() {
+      openModal(`
+        <div class="p-5 border-b border-[#E2E8F0] flex items-center justify-between">
+          <h3 class="font-bold text-base text-[#1E293B]">Cadastrar Novo Ingrediente</h3>
+          <button onclick="closeModal()" class="text-[#64748B]"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form onsubmit="salvarNovoInsumo(event)" class="p-5 space-y-4">
+          <div>
+            <label class="block text-xs font-semibold mb-1">Nome do Insumo <span class="text-red-600">*</span></label>
+            <input type="text" id="ins-nome" required placeholder="Ex.: Molho Especial" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold mb-1">Unidade Base <span class="text-red-600">*</span></label>
+              <select id="ins-un" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm bg-white">
+                <option value="UN">Unidade (UN)</option>
+                <option value="G">Gramas (G)</option>
+                <option value="ML">Mililitros (ML)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1">Estoque Mínimo <span class="text-red-600">*</span></label>
+              <input type="number" id="ins-min" required min="1" value="10" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm" />
+            </div>
+          </div>
+          <div class="pt-2 flex justify-end gap-2">
+            <button type="button" onclick="closeModal()" class="h-10 px-4 rounded-lg border border-[#E2E8F0] text-xs font-semibold">Cancelar</button>
+            <button type="submit" class="h-10 px-4 rounded-lg bg-[#EA580C] text-white text-xs font-semibold">Salvar Insumo</button>
+          </div>
+        </form>
+      `);
+    }
+
+    function salvarNovoInsumo(e) {
+      e.preventDefault();
+      const nome = document.getElementById('ins-nome').value.trim();
+      const unidade = document.getElementById('ins-un').value;
+      const minimo = Number(document.getElementById('ins-min').value);
+
+      DB.ingredientes.push({
+        id: Date.now(),
+        nome,
+        unidade,
+        saldo: 0,
+        minimo,
+        custo_medio: 0,
+        ativo: true
+      });
+      closeModal();
+      updateHeaderAlerts();
+      renderActiveScreen();
+      showToast('Insumo Cadastrado', `${nome} adicionado com saldo inicial zerado.`);
+    }
+
+    function abrirModalMovimentacao(tipo) {
+      const isEntrada = tipo === 'ENTRADA';
+      openModal(`
+        <div class="p-5 border-b border-[#E2E8F0] flex items-center justify-between">
+          <h3 class="font-bold text-base text-[#1E293B]">
+            ${isEntrada ? 'Lançar Compra de Suprimentos (Entrada)' : 'Registrar Perda ou Ajuste (Saída)'}
+          </h3>
+          <button onclick="closeModal()" class="text-[#64748B]"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form onsubmit="executarMovimentacao(event, '${tipo}')" class="p-5 space-y-4">
+          <div>
+            <label class="block text-xs font-semibold mb-1">Ingrediente <span class="text-red-600">*</span></label>
+            <select id="mov-ing" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm bg-white">
+              ${DB.ingredientes.map(i => `<option value="${i.id}">${i.nome} (Saldo atual: ${i.saldo} ${i.unidade})</option>`).join('')}
+            </select>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold mb-1">Quantidade <span class="text-red-600">*</span></label>
+              <input type="number" id="mov-qtd" required min="0.01" step="0.01" placeholder="Ex.: 20"
+                class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm" />
+            </div>
+            ${isEntrada ? `
+              <div>
+                <label class="block text-xs font-semibold mb-1">Custo Unitário Pago (R$) <span class="text-red-600">*</span></label>
+                <input type="number" id="mov-custo" required min="0.001" step="0.001" placeholder="Ex.: 2.50"
+                  class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm" />
+              </div>
+            ` : `
+              <div class="flex items-end pb-2 text-xs text-[#64748B]">
+                Baixa pelo custo médio atual
+              </div>
+            `}
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1">
+              ${isEntrada ? 'Nota Fiscal / Fornecedor *' : 'Justificativa Obrigatória *'}
+            </label>
+            <input type="text" id="mov-motivo" required
+              placeholder="${isEntrada ? 'Ex.: Compra Atacadão NF 4412' : 'Ex.: Produto vencido / Queda na cozinha'}"
+              class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm" />
+          </div>
+          <div class="pt-2 flex justify-end gap-2">
+            <button type="button" onclick="closeModal()" class="h-10 px-4 rounded-lg border border-[#E2E8F0] text-xs font-semibold">Cancelar</button>
+            <button type="submit" class="h-10 px-4 rounded-lg ${isEntrada ? 'bg-[#EA580C]' : 'bg-[#DC2626]'} text-white text-xs font-semibold">
+              ${isEntrada ? 'Confirmar Entrada' : 'Confirmar Baixa'}
+            </button>
+          </div>
+        </form>
+      `);
+    }
+
+    function executarMovimentacao(e, tipo) {
+      e.preventDefault();
+      const ingId = Number(document.getElementById('mov-ing').value);
+      const qtd = Number(document.getElementById('mov-qtd').value);
+      const motivo = document.getElementById('mov-motivo').value.trim();
+      const ing = DB.ingredientes.find(i => i.id === ingId);
+
+      if (!ing) return;
+
+      const agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      if (tipo === 'ENTRADA') {
+        const custoNovo = Number(document.getElementById('mov-custo').value);
+        // Recálculo do Custo Médio Ponderado
+        const valorTotalAnterior = ing.saldo * ing.custo_medio;
+        const valorTotalCompra = qtd * custoNovo;
+        const novoSaldo = ing.saldo + qtd;
+        ing.custo_medio = Number(((valorTotalAnterior + valorTotalCompra) / novoSaldo).toFixed(4));
+        ing.saldo = Number(novoSaldo.toFixed(2));
+
+        DB.movimentacoesEstoque.unshift({
+          id: Date.now(),
+          data: `24/11/2026 ${agora}`,
+          ingrediente: ing.nome,
+          tipo: 'ENTRADA',
+          qtd: `+${qtd} ${ing.unidade}`,
+          custoUnit: custoNovo,
+          motivo,
+          responsavel: DB.currentUser.nome
+        });
+        showToast('Compra Registrada', `Custo médio de ${ing.nome} recalculado para ${formatBRL(ing.custo_medio)}.`);
+      } else {
+        if (ing.saldo < qtd) {
+          showToast('Operação Recusada', 'O saldo do estoque não pode ficar negativo.', 'error');
+          return;
+        }
+        ing.saldo = Number((ing.saldo - qtd).toFixed(2));
+        DB.movimentacoesEstoque.unshift({
+          id: Date.now(),
+          data: `24/11/2026 ${agora}`,
+          ingrediente: ing.nome,
+          tipo: 'PERDA',
+          qtd: `-${qtd} ${ing.unidade}`,
+          custoUnit: ing.custo_medio,
+          motivo,
+          responsavel: DB.currentUser.nome
+        });
+        showToast('Perda Registrada', `Baixa de ${qtd} ${ing.unidade} de ${ing.nome} auditada.`, 'warning');
+      }
+
+      closeModal();
+      updateHeaderAlerts();
+      renderActiveScreen();
+    }
+
+    // -------------------------------------------------------------------------
+    // 7. TELA 5: CARDÁPIO, PRODUTOS E FICHAS TÉCNICAS (vw_produtos_custo)
+    // -------------------------------------------------------------------------
+    function renderProdutos(container) {
+      container.innerHTML = `
+        <div class="space-y-6">
+          <div class="bg-white rounded-xl border border-[#E2E8F0] shadow-xs overflow-hidden">
+            <div class="p-4 border-b border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 class="text-base font-bold text-[#1E293B]">Engenharia de Cardápio e Margens (vw_produtos_custo)</h2>
+                <p class="text-xs text-[#64748B]">Custo apurado automaticamente via ficha técnica e custo médio dos insumos</p>
+              </div>
+              <button onclick="abrirModalNovoProduto()" class="h-10 px-4 rounded-lg bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-semibold flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> Novo Produto
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-[#E2E8F0] text-[11px] font-semibold uppercase text-[#64748B]">
+                    <th class="py-3 px-4">Produto</th>
+                    <th class="py-3 px-4">Categoria</th>
+                    <th class="py-3 px-4">Ficha Técnica (Insumos)</th>
+                    <th class="py-3 px-4 text-right">Custo Receita</th>
+                    <th class="py-3 px-4 text-right">Preço Venda</th>
+                    <th class="py-3 px-4 text-right">Margem Bruta</th>
+                    <th class="py-3 px-4">Status</th>
+                    <th class="py-3 px-4 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#E2E8F0] text-xs">
+                  ${DB.produtos.map(prod => {
+                    const custo = getCustoReceita(prod);
+                    const lucro = prod.preco - custo;
+                    const margemPct = prod.preco > 0 ? ((lucro / prod.preco) * 100) : 0;
+                    const prejuizo = lucro <= 0;
+
+                    return `
+                      <tr class="hover:bg-slate-50/70">
+                        <td class="py-3.5 px-4 font-bold text-[#1E293B]">
+                          <span class="mr-1.5">${prod.emoji}</span> ${prod.nome}
+                        </td>
+                        <td class="py-3.5 px-4 text-[#64748B]">${prod.categoria}</td>
+                        <td class="py-3.5 px-4 text-[#64748B] max-w-xs">
+                          ${prod.receita.map(r => {
+                            const ing = DB.ingredientes.find(i => i.id === r.id_ingrediente);
+                            return ing ? `${r.qtd}${ing.unidade} ${ing.nome}` : '';
+                          }).join(' • ')}
+                        </td>
+                        <td class="py-3.5 px-4 text-right font-medium text-[#64748B]">${formatBRL(custo)}</td>
+                        <td class="py-3.5 px-4 text-right font-bold text-[#1E293B]">${formatBRL(prod.preco)}</td>
+                        <td class="py-3.5 px-4 text-right">
+                          <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                            prejuizo ? 'bg-red-100 text-[#DC2626]' : margemPct < 40 ? 'bg-amber-100 text-[#D97706]' : 'bg-green-100 text-[#16A34A]'
+                          }">
+                            ${formatBRL(lucro)} (${margemPct.toFixed(0)}%)
+                          </span>
+                        </td>
+                        <td class="py-3.5 px-4">
+                          ${prod.ativo
+                            ? '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-[#16A34A]">Ativo</span>'
+                            : '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-[#64748B]">Inativo</span>'}
+                        </td>
+                        <td class="py-3.5 px-4 text-right">
+                          <button onclick="alternarStatusProduto(${prod.id})" class="px-2.5 py-1 rounded border border-[#E2E8F0] hover:bg-slate-50 text-[11px] font-semibold">
+                            ${prod.ativo ? 'Inativar' : 'Reativar'}
+                          </button>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function alternarStatusProduto(id) {
+      const p = DB.produtos.find(prod => prod.id === id);
+      if (p) {
+        p.ativo = !p.ativo;
+        renderActiveScreen();
+        showToast('Cardápio Atualizado', `${p.nome} foi ${p.ativo ? 'ativado' : 'inativado'} (histórico preservado).`);
+      }
+    }
+
+    function abrirModalNovoProduto() {
+      openModal(`
+        <div class="p-5 border-b border-[#E2E8F0] flex items-center justify-between">
+          <h3 class="font-bold text-base text-[#1E293B]">Cadastrar Produto & Ficha Técnica</h3>
+          <button onclick="closeModal()" class="text-[#64748B]"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form onsubmit="salvarNovoProduto(event)" class="p-5 space-y-4">
+          <div class="grid grid-cols-3 gap-3">
+            <div class="col-span-2">
+              <label class="block text-xs font-semibold mb-1">Nome do Produto <span class="text-red-600">*</span></label>
+              <input type="text" id="prod-nome" required placeholder="Ex.: X-Salada Especial" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1">Preço Venda (R$) <span class="text-red-600">*</span></label>
+              <input type="number" id="prod-preco" required step="0.50" min="1" placeholder="22.00" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Categoria <span class="text-red-600">*</span></label>
+            <select id="prod-cat" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm bg-white">
+              <option value="Lanches">Lanches</option>
+              <option value="Porções">Porções</option>
+              <option value="Bebidas">Bebidas</option>
+              <option value="Sobremesas">Sobremesas</option>
+            </select>
+          </div>
+          <div class="p-3 rounded-lg bg-slate-50 border border-[#E2E8F0] space-y-2">
+            <div class="text-xs font-bold text-[#1E293B]">Insumo Principal da Ficha Técnica</div>
+            <div class="grid grid-cols-3 gap-2">
+              <select id="prod-ing" class="col-span-2 h-9 px-2.5 rounded-lg border border-[#E2E8F0] text-xs bg-white">
+                ${DB.ingredientes.map(i => `<option value="${i.id}">${i.nome} (${i.unidade})</option>`).join('')}
+              </select>
+              <input type="number" id="prod-ing-qtd" required min="1" value="1" placeholder="Qtd" class="h-9 px-2.5 rounded-lg border border-[#E2E8F0] text-xs" />
+            </div>
+          </div>
+          <div class="pt-2 flex justify-end gap-2">
+            <button type="button" onclick="closeModal()" class="h-10 px-4 rounded-lg border border-[#E2E8F0] text-xs font-semibold">Cancelar</button>
+            <button type="submit" class="h-10 px-4 rounded-lg bg-[#EA580C] text-white text-xs font-semibold">Salvar Produto</button>
+          </div>
+        </form>
+      `);
+    }
+
+    function salvarNovoProduto(e) {
+      e.preventDefault();
+      const nome = document.getElementById('prod-nome').value.trim();
+      const preco = Number(document.getElementById('prod-preco').value);
+      const categoria = document.getElementById('prod-cat').value;
+      const id_ingrediente = Number(document.getElementById('prod-ing').value);
+      const qtd = Number(document.getElementById('prod-ing-qtd').value);
+
+      DB.produtos.push({
+        id: Date.now(),
+        nome,
+        categoria,
+        preco,
+        ativo: true,
+        emoji: '🍽️',
+        receita: [{ id_ingrediente, qtd }],
+        opcoes: []
+      });
+
+      closeModal();
+      renderActiveScreen();
+      showToast('Produto Adicionado', `${nome} já está disponível no PDV.`);
+    }
+
+    // -------------------------------------------------------------------------
+    // 8. TELA 6: GERENCIAMENTO DE FUNCIONÁRIOS E USUÁRIOS (RBAC)
+    // -------------------------------------------------------------------------
+    function renderFuncionarios(container) {
+      const roleBadges = {
+        CAIXA: 'bg-blue-100 text-[#2563EB]',
+        COZINHA: 'bg-purple-100 text-purple-700',
+        ESTOQUE: 'bg-amber-100 text-amber-800',
+        ADMIN: 'bg-[#172B4D] text-white'
+      };
+
+      container.innerHTML = `
+        <div class="bg-white rounded-xl border border-[#E2E8F0] shadow-xs overflow-hidden">
+          <div class="p-4 border-b border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-bold text-[#1E293B]">Equipe e Controle de Acesso (RBAC)</h2>
+              <p class="text-xs text-[#64748B]">Colaboradores inativados têm login bloqueado mantendo histórico de auditoria</p>
+            </div>
+            <button onclick="abrirModalNovoFuncionario()" class="h-10 px-4 rounded-lg bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-semibold flex items-center gap-2">
+              <i data-lucide="user-plus" class="w-4 h-4"></i> Novo Funcionário
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-[#E2E8F0] text-[11px] font-semibold uppercase text-[#64748B]">
+                  <th class="py-3 px-4">Nome</th>
+                  <th class="py-3 px-4">Cargo</th>
+                  <th class="py-3 px-4">Login</th>
+                  <th class="py-3 px-4">Perfil RBAC</th>
+                  <th class="py-3 px-4">Status</th>
+                  <th class="py-3 px-4 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#E2E8F0] text-xs">
+                ${DB.funcionarios.map(f => `
+                  <tr class="hover:bg-slate-50/70">
+                    <td class="py-3.5 px-4 font-bold text-[#1E293B]">${f.nome}</td>
+                    <td class="py-3.5 px-4 text-[#64748B]">${f.cargo}</td>
+                    <td class="py-3.5 px-4 font-mono text-[#64748B]">${f.login}</td>
+                    <td class="py-3.5 px-4">
+                      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${roleBadges[f.perfil]}">${f.perfil}</span>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      ${f.ativo
+                        ? '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-[#16A34A]">Ativo</span>'
+                        : '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-[#64748B]">Inativo</span>'}
+                    </td>
+                    <td class="py-3.5 px-4 text-right">
+                      <button onclick="alternarStatusFuncionario(${f.id})" class="px-2.5 py-1 rounded border border-[#E2E8F0] hover:bg-slate-50 text-[11px] font-semibold">
+                        ${f.ativo ? 'Desativar' : 'Reativar'}
+                      </button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function alternarStatusFuncionario(id) {
+      const f = DB.funcionarios.find(u => u.id === id);
+      if (!f) return;
+      if (f.id === DB.currentUser.id) {
+        showToast('Ação Bloqueada', 'Você não pode desativar seu próprio usuário logado.', 'error');
+        return;
+      }
+      f.ativo = !f.ativo;
+      renderActiveScreen();
+      showToast('Status Alterado', `Acesso de ${f.nome} agora está ${f.ativo ? 'ATIVO' : 'INATIVO'}.`);
+    }
+
+    function abrirModalNovoFuncionario() {
+      openModal(`
+        <div class="p-5 border-b border-[#E2E8F0] flex items-center justify-between">
+          <h3 class="font-bold text-base text-[#1E293B]">Cadastrar Colaborador</h3>
+          <button onclick="closeModal()" class="text-[#64748B]"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form onsubmit="salvarNovoFuncionario(event)" class="p-5 space-y-4">
+          <div>
+            <label class="block text-xs font-semibold mb-1">Nome Completo <span class="text-red-600">*</span></label>
+            <input type="text" id="func-nome" required placeholder="Ex.: Fernanda Lima" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold mb-1">Cargo <span class="text-red-600">*</span></label>
+              <input type="text" id="func-cargo" required placeholder="Ex.: Atendente" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1">Perfil de Acesso <span class="text-red-600">*</span></label>
+              <select id="func-perfil" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm bg-white">
+                <option value="CAIXA">CAIXA</option>
+                <option value="COZINHA">COZINHA</option>
+                <option value="ESTOQUE">ESTOQUE</option>
+                <option value="ADMIN">ADMIN</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Login Único <span class="text-red-600">*</span></label>
+            <input type="text" id="func-login" required placeholder="Ex.: fernanda.caixa" class="w-full h-10 px-3 rounded-lg border border-[#E2E8F0] text-sm" />
+          </div>
+          <div class="pt-2 flex justify-end gap-2">
+            <button type="button" onclick="closeModal()" class="h-10 px-4 rounded-lg border border-[#E2E8F0] text-xs font-semibold">Cancelar</button>
+            <button type="submit" class="h-10 px-4 rounded-lg bg-[#EA580C] text-white text-xs font-semibold">Criar Usuário</button>
+          </div>
+        </form>
+      `);
+    }
+
+    function salvarNovoFuncionario(e) {
+      e.preventDefault();
+      const nome = document.getElementById('func-nome').value.trim();
+      const cargo = document.getElementById('func-cargo').value.trim();
+      const perfil = document.getElementById('func-perfil').value;
+      const login = document.getElementById('func-login').value.trim().toLowerCase();
+
+      DB.funcionarios.push({ id: Date.now(), nome, cargo, login, perfil, ativo: true });
+      closeModal();
+      renderActiveScreen();
+      showToast('Colaborador Cadastrado', `${nome} (${perfil}) criado com senha criptografada.`);
+    }
+
+    // -------------------------------------------------------------------------
+    // 9. TELA 7: RELATÓRIOS E INDICADORES GERENCIAIS
+    // -------------------------------------------------------------------------
+    function renderRelatorios(container) {
+      const validos = DB.pedidos.filter(p => p.status !== 'CANCELADO');
+      const faturamentoBruto = validos.reduce((s, p) => s + p.total, 0);
+      const custoInsumos = validos.reduce((s, p) => s + (p.custoTotal || 0), 0);
+      const lucroLiquido = faturamentoBruto - custoInsumos;
+      const ticketMedio = validos.length ? faturamentoBruto / validos.length : 0;
+
+      // Agrupamento por forma de pagamento
+      const porPagamento = {};
+      validos.forEach(p => {
+        porPagamento[p.pagamento] = (porPagamento[p.pagamento] || 0) + p.total;
+      });
+
+      // Sugestão de compras (insumos abaixo do mínimo)
+      const sugestaoCompras = DB.ingredientes.filter(i => i.saldo <= i.minimo);
+
+      container.innerHTML = `
+        <div class="space-y-6">
+          <!-- KPIs Gerenciais -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-2xs">
+              <span class="text-xs font-semibold text-[#64748B]">Faturamento Bruto (Hoje)</span>
+              <div class="text-2xl font-bold text-[#1E293B] mt-2">${formatBRL(faturamentoBruto)}</div>
+              <div class="text-xs text-[#16A34A] font-medium mt-1">${validos.length} pedido(s) válido(s)</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-2xs">
+              <span class="text-xs font-semibold text-[#64748B]">Custo Exato dos Insumos</span>
+              <div class="text-2xl font-bold text-[#64748B] mt-2">${formatBRL(custoInsumos)}</div>
+              <div class="text-xs text-[#64748B] mt-1">Baixados nas receitas</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-2xs">
+              <span class="text-xs font-semibold text-[#64748B]">Lucro Líquido Operacional</span>
+              <div class="text-2xl font-bold text-[#16A34A] mt-2">${formatBRL(lucroLiquido)}</div>
+              <div class="text-xs text-[#64748B] mt-1">Margem real: ${faturamentoBruto > 0 ? ((lucroLiquido / faturamentoBruto) * 100).toFixed(1) : 0}%</div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-2xs">
+              <span class="text-xs font-semibold text-[#64748B]">Ticket Médio</span>
+              <div class="text-2xl font-bold text-[#2563EB] mt-2">${formatBRL(ticketMedio)}</div>
+              <div class="text-xs text-[#64748B] mt-1">Por pedido concluído</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Vendas por Forma de Pagamento -->
+            <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-xs space-y-4">
+              <h3 class="text-sm font-bold text-[#1E293B]">Faturamento por Forma de Pagamento</h3>
+              <div class="space-y-3">
+                ${Object.entries(porPagamento).map(([forma, valor]) => {
+                  const pct = faturamentoBruto > 0 ? (valor / faturamentoBruto) * 100 : 0;
+                  return `
+                    <div>
+                      <div class="flex justify-between text-xs font-semibold mb-1">
+                        <span>${forma}</span>
+                        <span>${formatBRL(valor)} (${pct.toFixed(0)}%)</span>
+                      </div>
+                      <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-[#EA580C] rounded-full" style="width: ${pct}%"></div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- Relatório de Planejamento de Compras -->
+            <div class="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-xs space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-sm font-bold text-[#1E293B]">Planejamento de Compras (Reposição)</h3>
+                  <p class="text-xs text-[#64748B]">Insumos abaixo do estoque mínimo de segurança</p>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-[#D97706]">${sugestaoCompras.length} item(ns)</span>
+              </div>
+
+              ${sugestaoCompras.length === 0 ? `
+                <p class="text-xs text-[#16A34A] font-medium py-4">Todos os insumos estão acima do estoque mínimo!</p>
+              ` : `
+                <table class="w-full text-left text-xs">
+                  <thead>
+                    <tr class="border-b border-[#E2E8F0] text-[#64748B]">
+                      <th class="py-2">Insumo</th>
+                      <th class="py-2 text-right">Atual</th>
+                      <th class="py-2 text-right">Mínimo</th>
+                      <th class="py-2 text-right">Sugestão Compra</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-[#E2E8F0]">
+                    ${sugestaoCompras.map(i => `
+                      <tr>
+                        <td class="py-2.5 font-semibold">${i.nome}</td>
+                        <td class="py-2.5 text-right text-[#DC2626] font-bold">${i.saldo} ${i.unidade}</td>
+                        <td class="py-2.5 text-right text-[#64748B]">${i.minimo} ${i.unidade}</td>
+                        <td class="py-2.5 text-right font-bold text-[#16A34A]">+${(i.minimo * 2) - i.saldo} ${i.unidade}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Inicializa ícones na carga da página
+    window.onload = function() {
+      lucide.createIcons();
+    };
+  </script>
+</body>
+</html>
