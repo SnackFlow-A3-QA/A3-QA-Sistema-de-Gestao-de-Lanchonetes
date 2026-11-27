@@ -81,4 +81,17 @@ public class Funcionario {
     public void setAtivo(boolean ativo) {
         this.ativo = ativo;
     }
+
+    /** Dados cadastrais já normalizados e validados pelo Service (a senha tem método próprio). */
+    public void atualizarDados(String nome, String cargo, Perfil perfil, String login) {
+        this.nome = nome;
+        this.cargo = cargo;
+        this.perfil = perfil;
+        this.login = login;
+    }
+
+    /** Recebe o hash BCrypt já calculado; nunca a senha em texto puro. */
+    public void redefinirSenha(String senhaHash) {
+        this.senhaHash = senhaHash;
+    }
 }

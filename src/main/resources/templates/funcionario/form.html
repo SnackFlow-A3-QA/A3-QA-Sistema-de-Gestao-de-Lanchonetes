@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: pagina('Funcionários', ${edicao ? 'Editar funcionário' : 'Novo funcionário'}, ~{::conteudo})}">
+<body>
+<section th:fragment="conteudo">
+    <div class="sf-cartao max-w-2xl">
+        <div class="sf-cartao-corpo">
+            <form th:action="@{${acao}}" th:object="${form}" method="post">
+                <div th:replace="~{fragments/componentes :: campoTexto('Nome completo', 'nome', true, 'text', 'Ex.: Fernanda Lima')}"></div>
+                <div th:replace="~{fragments/componentes :: campoTexto('Cargo', 'cargo', true, 'text', 'Ex.: Atendente')}"></div>
+                <div th:replace="~{fragments/componentes :: campoSelect('Perfil de acesso', 'perfil', true, ${perfis}, 'Selecione')}"></div>
+                <div th:replace="~{fragments/componentes :: campoTexto('Login', 'login', true, 'text', 'Ex.: fernanda.caixa')}"></div>
+                <th:block th:unless="${edicao}">
+                    <div th:replace="~{fragments/componentes :: campoTexto('Senha inicial', 'senha', true, 'password', 'Mínimo de 6 caracteres')}"></div>
+                </th:block>
+                <div class="flex justify-end gap-2.5 pt-2">
+                    <a th:replace="~{fragments/componentes :: linkBotao('/funcionarios', 'Cancelar', 'x', 'contorno')}"></a>
+                    <button th:replace="~{fragments/componentes :: botao('Salvar', 'save', 'primario')}"></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>
