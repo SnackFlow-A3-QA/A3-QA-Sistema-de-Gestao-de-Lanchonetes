@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: pagina('Funcionários', 'Equipe e controle de acesso', ~{::conteudo})}">
+<body>
+<section th:fragment="conteudo">
+    <div class="mb-4 flex justify-end">
+        <a th:replace="~{fragments/componentes :: linkBotao('/funcionarios/novo', 'Novo funcionário', 'user-plus', 'primario')}"></a>
+    </div>
+
+    <div class="sf-cartao" th:if="${#lists.isEmpty(funcionarios)}">
+        <div th:replace="~{fragments/componentes :: estadoVazio('users', 'Nenhum funcionário cadastrado', 'Cadastre o primeiro funcionário.')}"></div>
+    </div>
+
+    <div class="sf-cartao" th:unless="${#lists.isEmpty(funcionarios)}">
+        <div class="sf-tabela-rolagem">
+            <table class="sf-tabela">
+                <thead>
+                <tr>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Cargo</th>
+                    <th scope="col">Login</th>
+                    <th scope="col">Perfil</th>
+                    <th scope="col">Situação</th>
+                    <th scope="col">Ações</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="f : ${funcionarios}">
+                    <td class="font-semibold" th:text="${f.nome}">Nome</td>
+                    <td th:text="${f.cargo}">Cargo</td>
+                    <td><code th:text="${f.login}">login</code></td>
+                    <td><span th:replace="~{fragments/componentes :: badge(${f.perfil}, 'info', null)}"></span></td>
+                    <td>
+                        <th:block th:if="${f.ativo}">
+                            <span th:replace="~{fragments/componentes :: badge('Ativo', 'sucesso', 'check-circle-2')}"></span>
+                        </th:block>
+                        <th:block th:unless="${f.ativo}">
+                            <span th:replace="~{fragments/componentes :: badge('Inativo', 'neutro', 'circle-dashed')}"></span>
+                        </th:block>
+                    </td>
+                    <td>
+                        <div class="flex flex-wrap gap-2">
+                            <a class="sf-btn sf-btn-contorno sf-btn-compacto"
+                               th:href="@{/funcionarios/{id}/editar(id=${f.id})}">Editar</a>
+                            <a class="sf-btn sf-btn-contorno sf-btn-compacto"
+                               th:href="@{/funcionarios/{id}/senha(id=${f.id})}">Redefinir senha</a>
+                            <th:block th:if="${f.ativo}">
+                                <form th:if="${f.id != usuarioLogadoId}"
+                                      th:action="@{/funcionarios/{id}/inativar(id=${f.id})}" method="post">
+                                    <button type="submit" class="sf-btn sf-btn-contorno sf-btn-compacto"
+                                            data-confirmar-titulo="Inativar funcionário?"
+                                            data-confirmar-mensagem="O funcionário não conseguirá mais entrar no sistema."
+                                            data-confirmar-rotulo="Inativar">Inativar</button>
+                                </form>
+                            </th:block>
+                            <form th:unless="${f.ativo}" th:action="@{/funcionarios/{id}/ativar(id=${f.id})}" method="post">
+                                <button type="submit" class="sf-btn sf-btn-contorno sf-btn-compacto">Reativar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>
