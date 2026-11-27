@@ -1,9 +1,6 @@
 ## O que foi feito
 <!-- Resumo curto da mudança -->
 
-## Issue relacionada
-Closes #
-
 ## Checklist
 - [ ] Testes unitários adicionados/atualizados
 - [ ] `mvn verify` passa localmente (cobertura ≥ 80%)

@@ -1,17 +1,16 @@
 # Guia de contribuição
 
-Como se trabalha no SnackFlow. O projeto tem **um único responsável**, que decide, implementa e aprova. Leia antes de
-começar a codar.
+Como se trabalha no SnackFlow. A equipe tem **4 integrantes**, cada um com os seus módulos. Cada integrante abre o PR do seu módulo e faz o
+merge na `main` quando o CI estiver verde. Leia antes de começar a codar.
 
-## 1. Fluxo de trabalho (responsável único)
+## 1. Fluxo de trabalho (equipe de 4, cada um faz o merge do seu PR)
 
-1. Registre a tarefa numa **issue** (template do repositório) e se atribua.
-2. Crie uma **branch de trabalho** a partir da `main`: `feature/produto-cadastro`, `fix/cpf-invalido`, `test/estoque-saldo`.
-3. Escreva o código **e o teste juntos** (veja a seção 2).
-4. Rode `./mvnw verify` na sua máquina (Docker aberto). Só abra o PR com o build verde.
-5. Abra o **Pull Request como responsável** preenchendo o template e escreva `Closes #N` para fechar a issue.
-6. Aguarde o **CI verde** (testes + JaCoCo + SonarCloud com *quality gate* aprovado). **Não há aprovação de colega:** o
-   merge na `main` é feito pelo responsável assim que as verificações exigidas passam.
+1. Crie uma **branch** a partir da `main` atualizada (`git pull` antes): `feature/<modulo>-<assunto>`, `fix/...`, `test/...`.
+2. Escreva o código **e o teste juntos** (veja a seção 2) e faça commits pequenos, com a sua conta pessoal.
+3. Rode `./mvnw verify` na sua máquina (Docker aberto). Só abra o PR com o build verde.
+4. Abra o **Pull Request para a `main`** preenchendo o template.
+5. Aguarde o **CI verde** (testes + JaCoCo + SonarCloud com *quality gate* aprovado) e faça o merge. Se o CI falhar,
+   corrija na mesma branch e envie de novo: o próprio PR é atualizado.
 
 Ninguém faz push direto na `main`: a **regra de proteção da branch** exige o PR e as verificações do CI, e é ela que
 bloqueia o merge enquanto o CI ou o Sonar não estiverem aprovados. (A proteção da `main` e o `SONAR_TOKEN` foram
@@ -48,24 +47,27 @@ Regras de teste:
 
 - Padrão **Conventional Commits**: `feat:`, `fix:`, `test:`, `refactor:`, `docs:`, `chore:`, `ci:`.
 - Commits pequenos, com uma única finalidade (um teste, uma correção, uma tela).
-- Commite com a **conta pessoal do GitHub** do responsável, apenas os arquivos que você escreveu.
+- Commite com a **sua conta pessoal do GitHub**, apenas os arquivos que você escreveu (o edital avalia a autoria).
 - Commits de README, `pom.xml` e configurações não contam na avaliação de código do edital.
 - Mudanças em `database/lanchonete.sql`, `pom.xml`, `ci.yml`, segurança e layout são decisões deliberadas: faça-as em
-  commits e PRs separados e descreva o motivo no PR, porque afetam todos os módulos.
+  commits e PRs separados e descreva o motivo no PR, porque afetam todos os módulos. Integrantes não alteram esses
+  arquivos sem alinhar antes com o responsável do projeto.
 
 ## 5. Organização dos módulos
 
 Cada módulo é um pacote em `src/main/java/br/com/snackflow`; trabalhar um pacote por vez mantém os PRs pequenos.
 
-Os números 1 a 4 do planejamento são **só uma organização histórica dos módulos** (um agrupamento de pacotes). **Não
-indicam pessoas, revisores nem aprovações necessárias.**
+Os módulos são independentes: cada PR toca só os arquivos do próprio módulo e pode entrar na `main` em qualquer ordem.
+Quem trabalha em cada um:
 
-| Grupo do planejamento | Módulos (pacotes) |
+| Responsável | Módulos (pacotes) |
 |---|---|
-| 1 | `pedido` (PDV), `cozinha` |
-| 2 | `funcionario`, `config` (segurança e layout), `cliente`, pipeline de CI e Sonar |
-| 3 | `produto` (cardápio), `relatorio` (vendas) |
-| 4 | `estoque`, `relatorio` (estoque) |
+| Lucas N. | `pedido` (PDV), `cozinha` |
+| Guilherme H. | `funcionario`, `cliente`, `config` (segurança e layout), pipeline de CI e Sonar |
+| Rafael T. | `produto` (cardápio), `relatorio` (vendas, `GET /relatorios`) |
+| Rodrigo F. | `estoque`, `relatorio` (estoque, `GET /relatorios/estoque`) |
+
+O módulo `relatorio` tem dois controllers independentes, um de cada responsável, sem classe em comum.
 
 O pacote `common` é compartilhado (exceções, utilitários); alterações nele também seguem o fluxo da seção 1.
 
