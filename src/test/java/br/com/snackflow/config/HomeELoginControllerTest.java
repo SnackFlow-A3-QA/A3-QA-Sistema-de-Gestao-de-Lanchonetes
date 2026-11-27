@@ -22,6 +22,13 @@ class HomeELoginControllerTest {
     }
 
     @Test
+    void homeDeveUsarEmTodoPerfilAMesmaTelaInicialDeclaradaNoPerfil() {
+        for (Perfil perfil : Perfil.values()) {
+            assertThat(home.inicio(usuario(perfil))).isEqualTo("redirect:" + perfil.getPaginaInicial());
+        }
+    }
+
+    @Test
     void homeDeveMandarAnonimoParaLogin() {
         assertThat(home.inicio(null)).isEqualTo("redirect:/login");
     }
