@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: pagina('Cozinha (KDS)', 'Cozinha (KDS)', ~{::conteudo})}">
+<body>
+<section th:fragment="conteudo" class="space-y-6">
+
+    <!-- Cabecalho da fila da cozinha -->
+    <div class="sf-cartao">
+        <div class="sf-cartao-corpo flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                    <i data-lucide="flame" class="h-5 w-5"></i>
+                </div>
+                <div>
+                    <h2 class="text-base font-bold text-brand-text">Fila de preparo em tempo real</h2>
+                    <p class="text-xs text-brand-muted">
+                        Pedidos ordenados do mais antigo ao mais novo · Atualização automática a cada 15s (pausa com aba oculta)
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span th:replace="~{fragments/componentes :: badge(${#lists.size(pedidos) + ' pedido(s) em preparo'}, 'info', 'chef-hat')}"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado vazio -->
+    <div th:if="${#lists.isEmpty(pedidos)}" class="sf-cartao">
+        <div class="sf-cartao-corpo">
+            <div th:replace="~{fragments/componentes :: estadoVazio('check-circle-2', 'Fila zerada!', 'Nenhum pedido aguardando preparo no momento.')}"></div>
+        </div>
+    </div>
+
+    <!-- Grade de tickets em preparo -->
+    <div th:if="${!#lists.isEmpty(pedidos)}" class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <article th:each="ped : ${pedidos}"
+                 class="flex flex-col justify-between overflow-hidden rounded-xl bg-white shadow-sm"
+                 th:classappend="${ped.prioritario} ? 'border-2 border-brand-orange' : 'border border-brand-border'">
+            <div>
+                <div class="flex items-center justify-between gap-2 border-b px-4 py-3"
+                     th:classappend="${ped.prioritario} ? 'bg-orange-50 border-orange-200' : 'bg-slate-50 border-brand-border'">
+                    <div class="flex items-center gap-2">
+                        <span class="text-base font-bold text-brand-text" th:text="'#' + ${ped.idPedido}">#1</span>
+                        <th:block th:if="${ped.prioritario}">
+                            <span th:replace="~{fragments/componentes :: badge('Prioridade', 'aviso', 'flame')}"></span>
+                        </th:block>
+                    </div>
+                    <span class="inline-flex items-center gap-1 text-xs font-semibold text-brand-muted"
+                          th:if="${ped.dataHora != null}">
+                        <i data-lucide="clock" class="h-3.5 w-3.5"></i>
+                        <span th:text="${#temporals.format(ped.dataHora, 'HH:mm')}">12:00</span>
+                    </span>
+                </div>
+
+                <div class="space-y-3 p-4">
+                    <div class="text-xs text-brand-muted">
+                        Cliente:
+                        <strong class="text-brand-text"
+                                th:text="${ped.cliente != null ? ped.cliente : 'Balcão (anônimo)'}">Balcão</strong>
+                    </div>
+
+                    <div th:if="${ped.observacao != null and !#strings.isEmpty(ped.observacao)}">
+                        <div th:replace="~{fragments/componentes :: alerta('info', ${'Obs. do pedido: ' + ped.observacao})}"></div>
+                    </div>
+
+                    <ul class="divide-y divide-slate-100">
+                        <li th:each="item : ${ped.itens}" class="space-y-2 py-2.5 first:pt-0 last:pb-0">
+                            <div class="flex items-start gap-2">
+                                <span class="sf-badge sf-badge-neutro" th:text="${item.quantidade} + 'x'">1x</span>
+                                <span class="text-sm font-semibold text-brand-text" th:text="${item.produto}">Produto</span>
+                            </div>
+
+                            <div th:if="${!#lists.isEmpty(item.opcoes)}" class="flex flex-wrap gap-1.5 pl-1">
+                                <th:block th:each="op : ${item.opcoes}">
+                                    <th:block th:if="${op.adicional}">
+                                        <span th:replace="~{fragments/componentes :: badge(${op.texto}, 'aviso', 'plus-circle')}"></span>
+                                    </th:block>
+                                    <th:block th:if="${!op.adicional}">
+                                        <span th:replace="~{fragments/componentes :: badge(${op.texto}, 'perigo', 'minus-circle')}"></span>
+                                    </th:block>
+                                </th:block>
+                            </div>
+
+                            <p th:if="${item.observacao != null and !#strings.isEmpty(item.observacao)}"
+                               class="rounded-md bg-slate-50 px-2.5 py-1.5 text-xs text-brand-text">
+                                <strong class="font-semibold">Obs.:</strong>
+                                <span th:text="${item.observacao}">Obs item</span>
+                            </p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-brand-border bg-slate-50/70 p-4">
+                <form th:action="@{/cozinha/pedidos/{id}/pronto(id=${ped.idPedido})}" method="post">
+                    <button type="submit" class="sf-btn sf-btn-primario sf-btn-bloco">
+                        <i data-lucide="check-circle-2"></i>
+                        <span>Marcar como PRONTO</span>
+                    </button>
+                </form>
+            </div>
+        </article>
+    </div>
+
+    <script>
+        (function () {
+            var segundosVisiveis = 0;
+            window.setInterval(function () {
+                if (document.hidden) { return; }
+                segundosVisiveis += 1;
+                if (segundosVisiveis >= 15) {
+                    window.location.reload();
+                }
+            }, 1000);
+        })();
+    </script>
+</section>
+</body>
+</html>

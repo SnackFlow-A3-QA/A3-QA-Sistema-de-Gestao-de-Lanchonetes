@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: pagina('Ponto de venda', 'Ponto de venda (PDV)', ~{::conteudo})}">
+<body>
+<section th:fragment="conteudo">
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+
+        <!-- COLUNA ESQUERDA: CARDAPIO E PEDIDOS EM ANDAMENTO -->
+        <div class="space-y-6 xl:col-span-8">
+
+            <!-- Cardapio com busca e filtro por categoria -->
+            <div class="sf-cartao">
+                <div class="sf-cartao-corpo space-y-4">
+                    <form th:action="@{/pdv}" method="get" class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <div class="relative flex-1">
+                            <input type="text" name="busca" th:value="${buscaAtual}"
+                                   placeholder="Buscar produto no cardápio..."
+                                   aria-label="Buscar produto no cardápio"
+                                   class="sf-input">
+                        </div>
+                        <input type="hidden" name="categoria" th:value="${categoriaAtual}">
+                        <div class="flex items-center gap-2">
+                            <button type="submit" class="sf-btn sf-btn-secundario">
+                                <i data-lucide="search"></i><span>Buscar</span>
+                            </button>
+                            <a th:if="${!#strings.isEmpty(buscaAtual) or !#strings.isEmpty(categoriaAtual)}"
+                               th:href="@{/pdv}" class="sf-btn sf-btn-contorno">Limpar filtro</a>
+                        </div>
+                    </form>
+
+                    <div th:if="${!#lists.isEmpty(categorias)}" class="flex flex-wrap gap-2">
+                        <a th:href="@{/pdv(busca=${buscaAtual})}"
+                           class="sf-btn sf-btn-compacto"
+                           th:classappend="${#strings.isEmpty(categoriaAtual)} ? 'sf-btn-primario' : 'sf-btn-secundario'">
+                            Todos
+                        </a>
+                        <a th:each="cat : ${categorias}"
+                           th:href="@{/pdv(categoria=${cat}, busca=${buscaAtual})}"
+                           th:text="${cat}"
+                           class="sf-btn sf-btn-compacto"
+                           th:classappend="${cat.equalsIgnoreCase(categoriaAtual)} ? 'sf-btn-primario' : 'sf-btn-secundario'">
+                            Categoria
+                        </a>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(produtos)}">
+                        <div th:replace="~{fragments/componentes :: estadoVazio('utensils', 'Nenhum produto encontrado', 'Ajuste os filtros ou verifique produtos ativos com ficha técnica.')}"></div>
+                    </div>
+
+                    <div th:if="${!#lists.isEmpty(produtos)}" class="grid grid-cols-1 gap-4 pt-1 sm:grid-cols-2 md:grid-cols-3">
+                        <div th:each="prod : ${produtos}"
+                             class="flex flex-col justify-between rounded-xl border border-brand-border bg-white p-4 transition"
+                             th:classappend="${!prod.estaDisponivel()} ? 'opacity-75 bg-red-50/20' : 'hover:border-brand-orange'">
+                            <div>
+                                <div class="flex items-start justify-between gap-2">
+                                    <span class="text-xs font-medium text-brand-muted" th:text="${prod.categoria}">Categoria</span>
+                                    <th:block th:if="${prod.disponivel <= 0}">
+                                        <span th:replace="~{fragments/componentes :: badge('Indisponível', 'perigo', 'x-circle')}"></span>
+                                    </th:block>
+                                    <th:block th:if="${prod.disponivel > 0 and prod.disponivel <= 5}">
+                                        <span th:replace="~{fragments/componentes :: badge(${prod.disponivel + ' un. disp.'}, 'aviso', 'alert-triangle')}"></span>
+                                    </th:block>
+                                    <th:block th:if="${prod.disponivel > 5}">
+                                        <span th:replace="~{fragments/componentes :: badge(${prod.disponivel + ' un. disp.'}, 'sucesso', 'check-circle-2')}"></span>
+                                    </th:block>
+                                </div>
+                                <h3 class="mt-2 text-sm font-semibold text-brand-text" th:text="${prod.nome}">Produto</h3>
+                            </div>
+
+                            <div class="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
+                                <span class="text-base font-bold text-brand-text"
+                                      th:text="'R$ ' + ${#numbers.formatDecimal(prod.preco, 1, 'POINT', 2, 'COMMA')}">
+                                    R$ 0,00
+                                </span>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button"
+                                            class="sf-btn sf-btn-contorno sf-btn-compacto js-abrir-opcoes"
+                                            th:disabled="${!prod.estaDisponivel()}"
+                                            th:data-produto-id="${prod.idProduto}"
+                                            th:data-produto-nome="${prod.nome}">
+                                        Opções
+                                    </button>
+                                    <form th:action="@{/pdv/itens}" method="post" class="inline">
+                                        <input type="hidden" name="idProduto" th:value="${prod.idProduto}">
+                                        <input type="hidden" name="quantidade" value="1">
+                                        <button type="submit"
+                                                class="sf-btn sf-btn-primario sf-btn-compacto"
+                                                th:disabled="${!prod.estaDisponivel()}"
+                                                th:aria-label="'Adicionar ' + ${prod.nome}">
+                                            <i data-lucide="plus"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pedidos em andamento: entrega (PRONTO) e cancelamento (EM_PREPARO) -->
+            <div class="sf-cartao">
+                <div class="sf-cartao-cabecalho flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h2 class="sf-cartao-titulo">Pedidos em andamento</h2>
+                        <p class="text-xs text-brand-muted">Pedidos em preparo na cozinha ou prontos para retirada</p>
+                    </div>
+                    <span class="sf-badge sf-badge-info">
+                        <i data-lucide="clock"></i>
+                        <span th:text="${#lists.size(pedidosEmAndamento)} + ' ativo(s)'">0 ativo(s)</span>
+                    </span>
+                </div>
+                <div class="sf-cartao-corpo">
+                    <div th:if="${#lists.isEmpty(pedidosEmAndamento)}">
+                        <div th:replace="~{fragments/componentes :: estadoVazio('inbox', 'Nenhum pedido em andamento', 'Pedidos confirmados aparecerão aqui até a entrega ou cancelamento.')}"></div>
+                    </div>
+
+                    <div th:if="${!#lists.isEmpty(pedidosEmAndamento)}" class="sf-tabela-rolagem">
+                        <table class="sf-tabela">
+                            <thead>
+                            <tr>
+                                <th scope="col">Pedido</th>
+                                <th scope="col">Cliente</th>
+                                <th scope="col">Itens</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="sf-direita">Total</th>
+                                <th scope="col" class="sf-direita">Ações</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="ped : ${pedidosEmAndamento}">
+                                <td>
+                                    <div class="font-bold text-brand-text" th:text="'#' + ${ped.idPedido}">#1</div>
+                                    <div class="text-xs text-brand-muted"
+                                         th:if="${ped.dataHora != null}"
+                                         th:text="${#temporals.format(ped.dataHora, 'HH:mm')}">12:00</div>
+                                </td>
+                                <td th:text="${ped.nomeCliente != null ? ped.nomeCliente : 'Balcão (anônimo)'}">Balcão</td>
+                                <td class="max-w-xs text-xs text-brand-muted"
+                                    th:text="${ped.resumoItens != null ? ped.resumoItens : '-'}">Itens</td>
+                                <td>
+                                    <span th:replace="~{fragments/componentes :: badgeStatus(${ped.status})}"></span>
+                                </td>
+                                <td class="sf-direita font-semibold"
+                                    th:text="'R$ ' + ${#numbers.formatDecimal(ped.valorTotal, 1, 'POINT', 2, 'COMMA')}">
+                                    R$ 0,00
+                                </td>
+                                <td class="sf-direita">
+                                    <div class="inline-flex items-center justify-end gap-1.5">
+                                        <form th:if="${ped.status.name() == 'PRONTO'}"
+                                              th:action="@{/pdv/pedidos/{id}/entregar(id=${ped.idPedido})}"
+                                              method="post">
+                                            <button type="submit" class="sf-btn sf-btn-primario sf-btn-compacto">
+                                                <i data-lucide="package-check"></i><span>Entregar</span>
+                                            </button>
+                                        </form>
+                                        <form th:if="${ped.status.name() == 'EM_PREPARO'}"
+                                              th:action="@{/pdv/pedidos/{id}/cancelar(id=${ped.idPedido})}"
+                                              method="post">
+                                            <button type="submit"
+                                                    class="sf-btn sf-btn-perigo sf-btn-compacto"
+                                                    data-confirmar-titulo="Cancelar pedido?"
+                                                    data-confirmar-rotulo="Confirmar cancelamento"
+                                                    th:attr="data-confirmar-mensagem=${'Deseja realmente cancelar o pedido #' + ped.idPedido + '? Como ele está em preparo, os ingredientes baixados retornarão automaticamente ao estoque.'}">
+                                                <i data-lucide="x-circle"></i><span>Cancelar</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUNA DIREITA: CARRINHO / PEDIDO ATUAL -->
+        <div class="xl:col-span-4">
+            <div class="sf-cartao sticky top-6 overflow-hidden">
+                <div class="sf-cartao-cabecalho flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <h2 class="sf-cartao-titulo">Pedido atual</h2>
+                        <span th:replace="~{fragments/componentes :: badgeStatus('ABERTO')}"></span>
+                    </div>
+                    <form th:if="${!carrinho.estaVazio()}" th:action="@{/pdv/limpar}" method="post">
+                        <button type="submit" class="sf-btn sf-btn-contorno sf-btn-compacto">
+                            <i data-lucide="trash-2"></i><span>Limpar</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Identificacao do cliente (opcional) -->
+                <div class="border-b border-brand-border bg-slate-50/70 px-5 py-3 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-brand-text">Cliente (opcional)</span>
+                        <button type="button" id="btn-abrir-modal-cliente"
+                                class="sf-btn sf-btn-contorno sf-btn-compacto">
+                            <i data-lucide="user-plus"></i><span>Buscar / Novo</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between rounded-lg border border-brand-border bg-white px-3 py-2 text-xs">
+                        <span id="cliente-vinculado-nome"
+                              th:text="${carrinho.nomeCliente != null ? carrinho.nomeCliente : 'Venda de balcão (anônimo)'}">
+                            Venda de balcão (anônimo)
+                        </span>
+                        <form th:if="${carrinho.idCliente != null}" th:action="@{/pdv/cliente}" method="post">
+                            <button type="submit" class="text-xs font-semibold text-red-600 hover:underline">
+                                Remover
+                            </button>
+                        </form>
+                    </div>
+                    <form id="form-vincular-cliente" th:action="@{/pdv/cliente}" method="post" hidden>
+                        <input type="hidden" id="input-vincular-cliente-id" name="idCliente">
+                    </form>
+                </div>
+
+                <!-- Itens do carrinho -->
+                <div class="sf-cartao-corpo max-h-[380px] space-y-3 overflow-y-auto">
+                    <div th:if="${carrinho.estaVazio()}">
+                        <div th:replace="~{fragments/componentes :: estadoVazio('shopping-bag', 'Nenhum item no pedido', 'Selecione produtos do cardápio para montar o pedido.')}"></div>
+                    </div>
+
+                    <div th:each="item : ${carrinho.itens}"
+                         class="space-y-2 rounded-lg border border-brand-border bg-white p-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <div class="text-sm font-semibold text-brand-text" th:text="${item.nomeProduto}">Produto</div>
+                                <div class="text-xs font-semibold text-brand-orange">
+                                    <span th:text="'R$ ' + ${#numbers.formatDecimal(item.precoUnitarioComAdicionais(), 1, 'POINT', 2, 'COMMA')}">R$ 0,00</span>
+                                    <span> × </span>
+                                    <span th:text="${item.quantidade}">1</span>
+                                    <span> = </span>
+                                    <span th:text="'R$ ' + ${#numbers.formatDecimal(item.subtotal(), 1, 'POINT', 2, 'COMMA')}">R$ 0,00</span>
+                                </div>
+                            </div>
+                            <form th:action="@{/pdv/itens/{uid}/remover(uid=${item.uid})}" method="post">
+                                <button type="submit"
+                                        class="rounded p-1 text-brand-muted hover:text-red-600"
+                                        th:aria-label="'Remover ' + ${item.nomeProduto}">
+                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <div th:if="${!#lists.isEmpty(item.opcoes)}" class="flex flex-wrap gap-1.5">
+                            <th:block th:each="op : ${item.opcoes}">
+                                <th:block th:if="${op.tipo == 'ADICIONAL'}">
+                                    <span th:replace="~{fragments/componentes :: badge(${'+ ' + op.nome}, 'aviso', 'plus-circle')}"></span>
+                                </th:block>
+                                <th:block th:if="${op.tipo != 'ADICIONAL'}">
+                                    <span th:replace="~{fragments/componentes :: badge(${'SEM ' + op.nome}, 'perigo', 'minus-circle')}"></span>
+                                </th:block>
+                            </th:block>
+                        </div>
+
+                        <div th:if="${item.observacao != null}"
+                             class="text-xs italic text-brand-muted"
+                             th:text="${item.observacao}">Observação</div>
+
+                        <div class="flex items-center justify-between pt-1">
+                            <div class="flex items-center gap-1.5">
+                                <form th:if="${item.quantidade > 1}"
+                                      th:action="@{/pdv/itens/{uid}/quantidade(uid=${item.uid})}" method="post">
+                                    <input type="hidden" name="quantidade" th:value="${item.quantidade - 1}">
+                                    <button type="submit" class="sf-btn sf-btn-contorno sf-btn-compacto" aria-label="Diminuir quantidade">-</button>
+                                </form>
+                                <form th:if="${item.quantidade <= 1}"
+                                      th:action="@{/pdv/itens/{uid}/remover(uid=${item.uid})}" method="post">
+                                    <button type="submit" class="sf-btn sf-btn-contorno sf-btn-compacto" aria-label="Remover item">-</button>
+                                </form>
+
+                                <span class="w-6 text-center text-xs font-bold" th:text="${item.quantidade}">1</span>
+
+                                <form th:action="@{/pdv/itens/{uid}/quantidade(uid=${item.uid})}" method="post">
+                                    <input type="hidden" name="quantidade" th:value="${item.quantidade + 1}">
+                                    <button type="submit" class="sf-btn sf-btn-contorno sf-btn-compacto" aria-label="Aumentar quantidade">+</button>
+                                </form>
+                            </div>
+                            <button type="button"
+                                    class="text-xs font-semibold text-blue-600 hover:underline js-editar-opcoes"
+                                    th:data-item-uid="${item.uid}"
+                                    th:data-produto-id="${item.idProduto}"
+                                    th:data-produto-nome="${item.nomeProduto}"
+                                    th:data-item-obs="${item.observacao != null ? item.observacao : ''}"
+                                    th:data-item-opcoes="${#strings.listJoin(item.opcoes.![idOpcao], ',')}">
+                                Editar opções
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Finalizacao e pagamento -->
+                <form th:action="@{/pdv/confirmar}" th:object="${finalizarForm}" method="post"
+                      class="space-y-4 border-t border-brand-border bg-slate-50/70 p-5">
+                    <div class="sf-campo mb-0">
+                        <label class="sf-rotulo" for="formaPagamento">
+                            <span>Forma de pagamento</span><span class="sf-obrigatorio" aria-hidden="true"> *</span>
+                        </label>
+                        <select id="formaPagamento" th:field="*{formaPagamento}" class="sf-input">
+                            <option value="">Selecione a forma de pagamento</option>
+                            <option th:each="fp : ${formasPagamento}"
+                                    th:value="${fp}"
+                                    th:text="${fp.rotulo}">PIX</option>
+                        </select>
+                    </div>
+
+                    <div th:replace="~{fragments/componentes :: campoTextarea('Observação do pedido', 'observacao', false)}"></div>
+
+                    <div class="flex items-center justify-between border-t border-brand-border pt-3">
+                        <span class="text-sm font-semibold text-brand-muted">Total a pagar</span>
+                        <span class="text-xl font-bold text-brand-text"
+                              th:text="'R$ ' + ${#numbers.formatDecimal(carrinho.valorTotal, 1, 'POINT', 2, 'COMMA')}">
+                            R$ 0,00
+                        </span>
+                    </div>
+
+                    <button type="submit"
+                            class="sf-btn sf-btn-primario sf-btn-grande sf-btn-bloco"
+                            th:disabled="${carrinho.estaVazio()}">
+                        <i data-lucide="check-circle-2"></i>
+                        <span>Confirmar e enviar para cozinha</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para customizar opcoes do produto ou editar opcoes do item no carrinho -->
+    <div id="modal-opcoes-pdv" class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4"
+         role="dialog" aria-modal="true" aria-labelledby="modal-opcoes-titulo" hidden>
+        <div class="w-full max-w-md rounded-xl border border-brand-border bg-white shadow-xl">
+            <div class="flex items-center justify-between border-b border-brand-border px-5 py-4">
+                <h2 id="modal-opcoes-titulo" class="text-base font-bold text-brand-text">Opções do produto</h2>
+                <button type="button" id="modal-opcoes-fechar" class="sf-btn sf-btn-contorno sf-btn-compacto">Fechar</button>
+            </div>
+            <form id="form-opcoes-pdv" th:action="@{/pdv/itens}" method="post"
+                  th:data-url-base="@{/pdv/itens}" class="space-y-4 p-5">
+                <input type="hidden" id="opcoes-id-produto" name="idProduto">
+                <div id="opcoes-campo-quantidade" class="sf-campo mb-0">
+                    <label class="sf-rotulo" for="opcoes-quantidade">Quantidade</label>
+                    <input id="opcoes-quantidade" type="number" name="quantidade" min="1" value="1" class="sf-input">
+                </div>
+                <div>
+                    <div class="sf-rotulo">Adicionais e remoções</div>
+                    <div id="opcoes-lista" class="space-y-2 text-sm"></div>
+                </div>
+                <div class="sf-campo mb-0">
+                    <label class="sf-rotulo" for="opcoes-observacao">Observação para a cozinha</label>
+                    <input id="opcoes-observacao" type="text" name="observacao" maxlength="255"
+                           placeholder="Ex.: Carne bem passada, cortar ao meio" class="sf-input">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" id="modal-opcoes-cancelar" class="sf-btn sf-btn-contorno">Cancelar</button>
+                    <button type="submit" class="sf-btn sf-btn-primario">Salvar item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        (function () {
+            var opcoesPorProduto = /*[[${opcoesPorProduto}]]*/ {};
+            var modal = document.getElementById('modal-opcoes-pdv');
+            if (!modal) { return; }
+
+            var form = document.getElementById('form-opcoes-pdv');
+            var urlBase = form.getAttribute('data-url-base');
+            var titulo = document.getElementById('modal-opcoes-titulo');
+            var inputProduto = document.getElementById('opcoes-id-produto');
+            var campoQtd = document.getElementById('opcoes-campo-quantidade');
+            var inputQtd = document.getElementById('opcoes-quantidade');
+            var lista = document.getElementById('opcoes-lista');
+            var inputObs = document.getElementById('opcoes-observacao');
+
+            function preencherOpcoes(produtoId, selecionados) {
+                var opcoes = opcoesPorProduto[String(produtoId)] || [];
+                lista.replaceChildren();
+                if (!opcoes.length) {
+                    var vazio = document.createElement('p');
+                    vazio.className = 'text-xs text-brand-muted';
+                    vazio.textContent = 'Este produto não possui opções cadastradas.';
+                    lista.appendChild(vazio);
+                    return;
+                }
+                opcoes.forEach(function (op) {
+                    var label = document.createElement('label');
+                    label.className = 'sf-check justify-between rounded-lg border border-brand-border p-2.5';
+
+                    var esquerda = document.createElement('span');
+                    esquerda.className = 'flex items-center gap-2';
+
+                    var check = document.createElement('input');
+                    check.type = 'checkbox';
+                    check.name = 'idsOpcoes';
+                    check.value = String(op.idOpcao);
+                    check.checked = selecionados.indexOf(op.idOpcao) >= 0;
+
+                    var nome = document.createElement('span');
+                    nome.textContent = (op.tipo === 'ADICIONAL' ? '+ ' : 'SEM ') + op.nome;
+
+                    esquerda.appendChild(check);
+                    esquerda.appendChild(nome);
+
+                    var preco = document.createElement('span');
+                    preco.className = 'text-xs font-semibold';
+                    preco.textContent = Number(op.precoAdicional) > 0
+                        ? '+ R$ ' + Number(op.precoAdicional).toFixed(2).replace('.', ',')
+                        : 'Sem custo';
+
+                    label.appendChild(esquerda);
+                    label.appendChild(preco);
+                    lista.appendChild(label);
+                });
+            }
+
+            function abrirModal(config) {
+                titulo.textContent = config.titulo;
+                form.action = config.action;
+                inputProduto.value = String(config.produtoId);
+                campoQtd.hidden = !config.mostrarQtd;
+                inputQtd.value = '1';
+                inputObs.value = config.obs || '';
+                preencherOpcoes(config.produtoId, config.selecionados || []);
+                modal.hidden = false;
+            }
+
+            function fecharModal() {
+                modal.hidden = true;
+            }
+
+            document.querySelectorAll('.js-abrir-opcoes').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    abrirModal({
+                        titulo: 'Customizar ' + btn.getAttribute('data-produto-nome'),
+                        action: urlBase,
+                        produtoId: btn.getAttribute('data-produto-id'),
+                        mostrarQtd: true,
+                        obs: '',
+                        selecionados: []
+                    });
+                });
+            });
+
+            document.querySelectorAll('.js-editar-opcoes').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var rawIds = btn.getAttribute('data-item-opcoes') || '';
+                    var ids = rawIds ? rawIds.split(',').map(Number).filter(Boolean) : [];
+                    var uid = btn.getAttribute('data-item-uid');
+                    abrirModal({
+                        titulo: 'Editar ' + btn.getAttribute('data-produto-nome'),
+                        action: urlBase + '/' + encodeURIComponent(uid) + '/opcoes',
+                        produtoId: btn.getAttribute('data-produto-id'),
+                        mostrarQtd: false,
+                        obs: btn.getAttribute('data-item-obs') || '',
+                        selecionados: ids
+                    });
+                });
+            });
+
+            document.getElementById('modal-opcoes-fechar').addEventListener('click', fecharModal);
+            document.getElementById('modal-opcoes-cancelar').addEventListener('click', fecharModal);
+            modal.addEventListener('click', function (e) { if (e.target === modal) { fecharModal(); } });
+            document.addEventListener('keydown', function (e) { if (!modal.hidden && e.key === 'Escape') { fecharModal(); } });
+        })();
+    </script>
+
+    <!-- Modal de busca e cadastro rapido de cliente (contrato secao 14: /clientes/busca e /clientes/rapido) -->
+    <div id="modal-cliente-pdv" class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4"
+         role="dialog" aria-modal="true" aria-labelledby="modal-cliente-titulo" hidden>
+        <div class="w-full max-w-lg rounded-xl border border-brand-border bg-white shadow-xl">
+            <div class="flex items-center justify-between border-b border-brand-border px-5 py-4">
+                <h2 id="modal-cliente-titulo" class="text-base font-bold text-brand-text">Vincular cliente ao pedido</h2>
+                <button type="button" id="modal-cliente-fechar" class="sf-btn sf-btn-contorno sf-btn-compacto">Fechar</button>
+            </div>
+
+            <div class="space-y-5 p-5">
+                <!-- Busca de cliente -->
+                <div class="space-y-2">
+                    <label class="sf-rotulo" for="busca-cliente-q">Buscar cliente cadastrado</label>
+                    <div class="flex gap-2">
+                        <input id="busca-cliente-q" type="text" class="sf-input"
+                               placeholder="Digite nome ou CPF (mínimo 2 caracteres)">
+                        <button type="button" id="btn-buscar-cliente" class="sf-btn sf-btn-secundario">
+                            <i data-lucide="search"></i><span>Buscar</span>
+                        </button>
+                    </div>
+                    <div id="lista-clientes-busca" class="max-h-44 space-y-2 overflow-y-auto pt-1 text-xs"></div>
+                </div>
+
+                <hr class="border-brand-border">
+
+                <!-- Cadastro rapido -->
+                <form id="form-cadastro-rapido-cliente" class="space-y-3" novalidate
+                      th:data-url-busca="@{/clientes/busca}"
+                      th:data-url-rapido="@{/clientes/rapido}">
+                    <h3 class="text-sm font-semibold text-brand-text">Ou cadastrar rapidamente</h3>
+                    <div class="sf-campo mb-0">
+                        <label class="sf-rotulo" for="cad-cli-nome">
+                            <span>Nome completo</span><span class="sf-obrigatorio" aria-hidden="true"> *</span>
+                        </label>
+                        <input id="cad-cli-nome" type="text" class="sf-input" placeholder="Ex.: Mariana Costa">
+                        <p id="erro-cad-cli-nome" class="sf-erro-campo" hidden></p>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div class="sf-campo mb-0">
+                            <label class="sf-rotulo" for="cad-cli-telefone">
+                                <span>Telefone</span><span class="sf-obrigatorio" aria-hidden="true"> *</span>
+                            </label>
+                            <input id="cad-cli-telefone" type="text" class="sf-input" placeholder="(48) 99999-9999">
+                            <p id="erro-cad-cli-telefone" class="sf-erro-campo" hidden></p>
+                        </div>
+                        <div class="sf-campo mb-0">
+                            <label class="sf-rotulo" for="cad-cli-cpf">CPF (opcional)</label>
+                            <input id="cad-cli-cpf" type="text" maxlength="14" class="sf-input" placeholder="000.000.000-00">
+                            <p id="erro-cad-cli-cpf" class="sf-erro-campo" hidden></p>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" id="modal-cliente-cancelar" class="sf-btn sf-btn-contorno">Cancelar</button>
+                        <button type="submit" id="btn-salvar-cliente-rapido" class="sf-btn sf-btn-primario">
+                            <i data-lucide="user-check"></i><span>Cadastrar e vincular</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var modal = document.getElementById('modal-cliente-pdv');
+            var abrirBtn = document.getElementById('btn-abrir-modal-cliente');
+            var formVincular = document.getElementById('form-vincular-cliente');
+            var inputVincularId = document.getElementById('input-vincular-cliente-id');
+            var formRapido = document.getElementById('form-cadastro-rapido-cliente');
+            if (!modal || !abrirBtn || !formRapido) { return; }
+
+            var urlBusca = formRapido.getAttribute('data-url-busca');
+            var urlRapido = formRapido.getAttribute('data-url-rapido');
+            var inputBusca = document.getElementById('busca-cliente-q');
+            var btnBuscar = document.getElementById('btn-buscar-cliente');
+            var listaResultados = document.getElementById('lista-clientes-busca');
+            var campos = {
+                nome: { input: document.getElementById('cad-cli-nome'), erro: document.getElementById('erro-cad-cli-nome') },
+                telefone: { input: document.getElementById('cad-cli-telefone'), erro: document.getElementById('erro-cad-cli-telefone') },
+                cpf: { input: document.getElementById('cad-cli-cpf'), erro: document.getElementById('erro-cad-cli-cpf') }
+            };
+
+            function notificarErro(titulo, mensagem) {
+                if (window.SnackFlow && window.SnackFlow.toast) {
+                    window.SnackFlow.toast(titulo, mensagem, 'erro');
+                }
+            }
+
+            function formatarCpf(cpf) {
+                if (!cpf) { return 'Sem CPF'; }
+                var d = String(cpf).replace(/\D/g, '');
+                if (d.length !== 11) { return cpf; }
+                return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            }
+
+            function limparErrosCampos() {
+                Object.keys(campos).forEach(function (chave) {
+                    campos[chave].input.classList.remove('sf-invalido');
+                    campos[chave].erro.textContent = '';
+                    campos[chave].erro.hidden = true;
+                });
+            }
+
+            function marcarErrosCampos(erros) {
+                if (!erros) { return; }
+                Object.keys(erros).forEach(function (chave) {
+                    if (campos[chave]) {
+                        campos[chave].input.classList.add('sf-invalido');
+                        campos[chave].erro.textContent = erros[chave];
+                        campos[chave].erro.hidden = false;
+                    }
+                });
+            }
+
+            function selecionarCliente(idCliente) {
+                inputVincularId.value = String(idCliente);
+                formVincular.submit();
+            }
+
+            function renderizarResultados(clientes) {
+                listaResultados.replaceChildren();
+                if (!clientes || !clientes.length) {
+                    var vazio = document.createElement('p');
+                    vazio.className = 'text-brand-muted';
+                    vazio.textContent = 'Nenhum cliente ativo encontrado.';
+                    listaResultados.appendChild(vazio);
+                    return;
+                }
+                clientes.forEach(function (c) {
+                    var linha = document.createElement('div');
+                    linha.className = 'flex items-center justify-between gap-2 rounded-lg border border-brand-border p-2.5';
+
+                    var info = document.createElement('div');
+                    var nomeEl = document.createElement('div');
+                    nomeEl.className = 'font-semibold text-brand-text';
+                    nomeEl.textContent = c.nome;
+                    var detEl = document.createElement('div');
+                    detEl.className = 'text-brand-muted';
+                    detEl.textContent = formatarCpf(c.cpf) + (c.telefone ? ' · ' + c.telefone : '');
+                    info.appendChild(nomeEl);
+                    info.appendChild(detEl);
+
+                    var btnSel = document.createElement('button');
+                    btnSel.type = 'button';
+                    btnSel.className = 'sf-btn sf-btn-primario sf-btn-compacto';
+                    btnSel.textContent = 'Selecionar';
+                    btnSel.addEventListener('click', function () { selecionarCliente(c.id); });
+
+                    linha.appendChild(info);
+                    linha.appendChild(btnSel);
+                    listaResultados.appendChild(linha);
+                });
+            }
+
+            async function buscarClientes() {
+                var q = (inputBusca.value || '').trim();
+                if (q.length < 2) {
+                    listaResultados.replaceChildren();
+                    var dica = document.createElement('p');
+                    dica.className = 'text-brand-muted';
+                    dica.textContent = 'Digite pelo menos 2 caracteres para buscar.';
+                    listaResultados.appendChild(dica);
+                    return;
+                }
+                try {
+                    var resp = await fetch(urlBusca + '?q=' + encodeURIComponent(q), {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    var corpo = await resp.json().catch(function () { return null; });
+                    if (!resp.ok) {
+                        notificarErro('Erro ao buscar cliente',
+                            (corpo && corpo.erro) ? corpo.erro : 'Serviço de clientes indisponível.');
+                        return;
+                    }
+                    renderizarResultados(Array.isArray(corpo) ? corpo : []);
+                } catch (e) {
+                    notificarErro('Erro ao buscar cliente', 'Não foi possível consultar o cadastro de clientes.');
+                }
+            }
+
+            async function cadastrarRapido(evento) {
+                evento.preventDefault();
+                limparErrosCampos();
+                var metaToken = document.querySelector('meta[name="_csrf"]');
+                var metaHeader = document.querySelector('meta[name="_csrf_header"]');
+                var headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+                if (metaToken && metaHeader) {
+                    headers[metaHeader.getAttribute('content')] = metaToken.getAttribute('content');
+                }
+                var payload = {
+                    nome: campos.nome.input.value.trim(),
+                    telefone: campos.telefone.input.value.trim(),
+                    cpf: campos.cpf.input.value.trim() || null
+                };
+                try {
+                    var resp = await fetch(urlRapido, {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(payload)
+                    });
+                    var corpo = await resp.json().catch(function () { return null; });
+                    if (!resp.ok) {
+                        if (corpo && corpo.campos) {
+                            marcarErrosCampos(corpo.campos);
+                        }
+                        notificarErro('Cadastro de cliente',
+                            (corpo && corpo.erro) ? corpo.erro : 'Não foi possível cadastrar o cliente.');
+                        return;
+                    }
+                    if (corpo && corpo.id) {
+                        selecionarCliente(corpo.id);
+                    }
+                } catch (e) {
+                    notificarErro('Cadastro de cliente', 'Serviço de clientes indisponível no momento.');
+                }
+            }
+
+            function abrir() {
+                limparErrosCampos();
+                modal.hidden = false;
+                inputBusca.focus();
+            }
+
+            function fechar() {
+                modal.hidden = true;
+            }
+
+            abrirBtn.addEventListener('click', abrir);
+            document.getElementById('modal-cliente-fechar').addEventListener('click', fechar);
+            document.getElementById('modal-cliente-cancelar').addEventListener('click', fechar);
+            modal.addEventListener('click', function (e) { if (e.target === modal) { fechar(); } });
+            document.addEventListener('keydown', function (e) { if (!modal.hidden && e.key === 'Escape') { fechar(); } });
+            btnBuscar.addEventListener('click', buscarClientes);
+            inputBusca.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    buscarClientes();
+                }
+            });
+            formRapido.addEventListener('submit', cadastrarRapido);
+
+            window.SnackFlowPdvCliente = {
+                formatarCpf: formatarCpf,
+                renderizarResultados: renderizarResultados
+            };
+        })();
+    </script>
+</section>
+</body>
+</html>
